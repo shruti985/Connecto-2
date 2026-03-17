@@ -24,7 +24,7 @@ interface ChatState {
   clearMessages: () => void;
 }
 
-const API_BASE = "https://connecto-2-u3a6.vercel.app/api/messages";
+const API_BASE = "https://connecto-2.onrender.com/api/messages";
 
 // Helper to get Auth Headers
 const getHeaders = () => ({

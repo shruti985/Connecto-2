@@ -308,7 +308,7 @@ const CommunityPage = () => {
         return;
       }
       const response = await axios.get(
-        `https://connecto-2-u3a6.vercel.app/api/posts/${id}`,
+        `https://connecto-2.onrender.com/api/posts/${id}`,
         {
           headers: { Authorization: token },
         },
@@ -366,7 +366,7 @@ const CommunityPage = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "https://connecto-2-u3a6.vercel.app/api/posts/create",
+        "https://connecto-2.onrender.com/api/posts/create",
         { community_id: id, content: newPost },
         { headers: { Authorization: token } },
       );
@@ -390,7 +390,7 @@ const CommunityPage = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        `https://connecto-2-u3a6.vercel.app/api/posts/${postId}/like`,
+        `https://connecto-2.onrender.com/api/posts/${postId}/like`,
         {},
         { headers: { Authorization: token } },
       );
@@ -416,7 +416,7 @@ const CommunityPage = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `https://connecto-2-u3a6.vercel.app/api/posts/${postId}/comments`,
+        `https://connecto-2.onrender.com/api/posts/${postId}/comments`,
         {
           headers: { Authorization: token },
         },
@@ -433,7 +433,7 @@ const CommunityPage = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `https://connecto-2-u3a6.vercel.app/api/posts/${postId}/comments`,
+        `https://connecto-2.onrender.com/api/posts/${postId}/comments`,
         { content: commentText },
         { headers: { Authorization: token } },
       );
@@ -480,7 +480,7 @@ const CommunityPage = () => {
     const loadMessages = async () => {
       try {
         const res = await axios.get(
-          `https://connecto-2-u3a6.vercel.app/api/messages/${id}`,
+          `https://connecto-2.onrender.com/api/messages/${id}`,
         );
         setChatMessages(res.data);
       } catch (err) {

@@ -117,7 +117,7 @@ node index.js
 
 ## Backend will run on:
 
-https://connecto-2-u3a6.vercel.app
+https://connecto-2.onrender.com
 
 ## 4️⃣ Frontend Configuration 💻
 

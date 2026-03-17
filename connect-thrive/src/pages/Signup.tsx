@@ -42,7 +42,7 @@ const Signup = () => {
     try {
       // 2. Actual API Call to your Node.js server
       const response = await axios.post(
-        "https://connecto-2-u3a6.vercel.app/api/auth/signup",
+        "https://connecto-2.onrender.com/api/auth/signup",
         {
           username: formData.name, // backend 'username' expect kar raha hai
           email: formData.email,

@@ -45,7 +45,7 @@ const Profile = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://connecto-2-u3a6.vercel.app/api/users/profile",
+          "https://connecto-2.onrender.com/api/users/profile",
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -74,7 +74,7 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.put(
-        "https://connecto-2-u3a6.vercel.app/api/users/profile/update",
+        "https://connecto-2.onrender.com/api/users/profile/update",
         tempProfile, // Buffer data bhejein
         { headers: { Authorization: `Bearer ${token}` } },
       );

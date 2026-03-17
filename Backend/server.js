@@ -19,7 +19,7 @@ const server = http.createServer(app); // HTTP server banaya
 // Socket initialize karein
 // initSocket(server);
 // Routes setup
-// Ab aapke sare auth routes https://connecto-2-u3a6.vercel.app/api/auth/... par milenge
+// Ab aapke sare auth routes https://connecto-2.onrender.com/api/auth/... par milenge
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);

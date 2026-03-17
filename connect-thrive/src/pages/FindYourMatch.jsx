@@ -11,7 +11,7 @@ import {
 } from "../components/FindMatch/OtherComponents";
 import "../findmatch.css";
 
-const API = "https://connecto-2-u3a6.vercel.app/api/users";
+const API = "https://connecto-2.onrender.com/api/users";
 
 function getToken() {
   return localStorage.getItem("token");
@@ -213,7 +213,7 @@ function CommunitiesSidebar() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    fetch("https://connecto-2-u3a6.vercel.app/api/users/communities", {
+    fetch("https://connecto-2.onrender.com/api/users/communities", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())

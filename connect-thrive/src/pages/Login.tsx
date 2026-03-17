@@ -23,7 +23,7 @@ const Login = () => {
     try {
       // 1. Backend ko request bhejna
       const response = await axios.post(
-        "https://connecto-2-u3a6.vercel.app/api/auth/login",
+        "https://connecto-2.onrender.com/api/auth/login",
         {
           email,
           password,
