@@ -476,19 +476,32 @@ const CommunityPage = () => {
       socket.off("receive_message");
     };
   }, [id]); // Jab community id badlegi, naya room join hoga
-  useEffect(() => {
-    const loadMessages = async () => {
-      try {
-        const res = await axios.get(
-          `https://connecto-2.onrender.com/api/messages/${id}`,
-        );
-        setChatMessages(res.data);
-      } catch (err) {
-        console.error("Failed to load history");
-      }
-    };
-    if (id) loadMessages();
-  }, [id]);
+ useEffect(() => {
+   const loadMessages = async () => {
+     try {
+       // 1. Token nikalo localStorage se
+       const token = localStorage.getItem("token");
+
+       if (!token) {
+         console.error("No token found, skipping history load");
+         return;
+       }
+
+       const res = await axios.get(
+         `https://connecto-2.onrender.com/api/messages/${id}`,
+         {
+           // 2. Header add karo (Ye miss ho gaya tha)
+           headers: { Authorization: token },
+         },
+       );
+       setChatMessages(res.data);
+     } catch (err) {
+       console.error("Failed to load history", err);
+     }
+   };
+
+   if (id) loadMessages();
+ }, [id]);
   const ChatInput = ({ onSend }: { onSend: (msg: string) => void }) => {
     const [text, setText] = useState("");
 
@@ -519,7 +532,7 @@ const CommunityPage = () => {
     if (currentMsg.trim() && id) {
       const msgData = {
         communityId: id,
-        sender_name: "Me",
+        sender_name: currentUser,
         message_text: currentMsg,
       };
 
@@ -529,9 +542,9 @@ const CommunityPage = () => {
       };
 
       // Phir emit karte waqt:
-      socket.emit("send_message", {
-        msgData,
-      });
+      socket.emit("send_message", 
+        msgData
+      );
       setCurrentMsg("");
     }
   };
@@ -848,7 +861,8 @@ const CommunityPage = () => {
                     const msgData = {
                       communityId: id,
                       sender_name: currentUser,
-                      message_text: msg, // <--- Ab ye '2026-02-28 13:20:26' bhejega
+                      message_text: msg,
+                      created_at: mysqlDate, // <--- Ab ye '2026-02-28 13:20:26' bhejega
                       is_read: 0,
                     };
 
