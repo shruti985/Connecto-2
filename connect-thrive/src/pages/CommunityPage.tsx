@@ -303,7 +303,7 @@ const fetchJoinStatus = async () => {
     const token = localStorage.getItem("token");
 
     const res = await axios.get(
-      "http://localhost:5000/api/communities/my-communities",
+      "https://connecto-2.onrender.com/api/communities/my-communities",
       {
         headers: { Authorization: token },
       }
@@ -325,7 +325,7 @@ const fetchJoinStatus = async () => {
 const fetchMembersCount = async () => {
   try {
     const res = await axios.get(
-      `http://localhost:5000/api/communities/${id}/members-count`
+      `https://connecto-2.onrender.com/api/communities/${id}/members-count`
     );
     console.log(res.data.membersCount)
     setMembersCount(res.data.membersCount);
@@ -346,7 +346,7 @@ const handleToggleJoin = async () => {
       console.log("Leaving:", id);
 
       await axios.delete(
-        `http://localhost:5000/api/communities/${id}/leave`,
+        `https://connecto-2.onrender.com/api/communities/${id}/leave`,
         {
           headers: { Authorization: token },
         }
@@ -365,7 +365,7 @@ const handleToggleJoin = async () => {
       console.log("Joining:", id);
  console.log(typeof id)
       await axios.post(
-        `http://localhost:5000/api/communities/${id}/join`,
+        `https://connecto-2.onrender.com/api/communities/${id}/join`,
         {},
         {
           headers: { Authorization: token },
