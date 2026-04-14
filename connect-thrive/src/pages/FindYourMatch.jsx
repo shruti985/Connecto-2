@@ -18,7 +18,7 @@ import {
   Star,
 } from "lucide-react";
 
-const API = "http://localhost:5000/api/users";
+const API = "https://connecto-2.onrender.com/api/users";
 
 const AVATAR_PALETTE = [
   { bg: "bg-travel/20", ring: "ring-travel/40", text: "text-travel" },
@@ -91,24 +91,18 @@ function MatchCard({ match, index, onConnect, connected }) {
     ...(match.fields || [])
       .slice(0, 1)
       .map((l) => ({ l, cls: "bg-primary/10 text-primary border-primary/25" })),
-    ...(match.sports || [])
-      .slice(0, 1)
-      .map((l) => ({
-        l,
-        cls: "bg-orange-500/10 text-orange-400 border-orange-500/25",
-      })),
-    ...(match.hobbies || [])
-      .slice(0, 1)
-      .map((l) => ({
-        l,
-        cls: "bg-secondary/10 text-secondary border-secondary/25",
-      })),
-    ...(match.travel || [])
-      .slice(0, 1)
-      .map((l) => ({
-        l,
-        cls: "bg-green-500/10 text-green-400 border-green-500/25",
-      })),
+    ...(match.sports || []).slice(0, 1).map((l) => ({
+      l,
+      cls: "bg-orange-500/10 text-orange-400 border-orange-500/25",
+    })),
+    ...(match.hobbies || []).slice(0, 1).map((l) => ({
+      l,
+      cls: "bg-secondary/10 text-secondary border-secondary/25",
+    })),
+    ...(match.travel || []).slice(0, 1).map((l) => ({
+      l,
+      cls: "bg-green-500/10 text-green-400 border-green-500/25",
+    })),
   ].slice(0, 3);
 
   return (

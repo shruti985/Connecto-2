@@ -32,14 +32,14 @@ const IdeaDetail = () => {
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinSkills, setJoinSkills] = useState("");
   const [joinMessage, setJoinMessage] = useState("");
-const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
   // Fetch Idea Details from Backend
   useEffect(() => {
     const fetchIdea = async () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/startup/idea/${id}`,
+          `https://connecto-2.onrender.com/api/startup/idea/${id}`,
           {
             headers: {
               // Token bhejna zaroori hai taaki backend like status check kar sake
@@ -91,43 +91,42 @@ const token = localStorage.getItem("token");
       </div>
     );
 
-// 2. handleLike function
-const handleLike = async () => {
-  if (!token) {
-    toast({ title: "Please login to like", variant: "destructive" });
-    return;
-  }
+  // 2. handleLike function
+  const handleLike = async () => {
+    if (!token) {
+      toast({ title: "Please login to like", variant: "destructive" });
+      return;
+    }
 
-  try {
-    const response = await axios.post(
-      `http://localhost:5000/api/startup/idea/${id}/like`,
-      {}, // 2nd argument 'data' hota hai, ise khali {} rakho
-      {
-        headers: {
-          // Check karo backend 'Bearer ' prefix maang raha hai ya nahi
-          Authorization: `Bearer ${token}`,
+    try {
+      const response = await axios.post(
+        `https://connecto-2.onrender.com/api/startup/idea/${id}/like`,
+        {}, // 2nd argument 'data' hota hai, ise khali {} rakho
+        {
+          headers: {
+            // Check karo backend 'Bearer ' prefix maang raha hai ya nahi
+            Authorization: `Bearer ${token}`,
+          },
         },
-      },
-    );
+      );
 
-    setIsLiked(response.data.liked);
-    setIdea((prev: any) => ({
-      ...prev,
-      likes: response.data.liked ? prev.likes + 1 : prev.likes - 1,
-    }));
+      setIsLiked(response.data.liked);
+      setIdea((prev: any) => ({
+        ...prev,
+        likes: response.data.liked ? prev.likes + 1 : prev.likes - 1,
+      }));
 
-    toast({
-      title: response.data.liked ? "Liked!" : "Removed Like",
-      duration: 1500,
-    });
-  } catch (error) {
-    console.error("Like error:", error);
-    toast({ title: "Action failed", variant: "destructive" });
-  }
-};
+      toast({
+        title: response.data.liked ? "Liked!" : "Removed Like",
+        duration: 1500,
+      });
+    } catch (error) {
+      console.error("Like error:", error);
+      toast({ title: "Action failed", variant: "destructive" });
+    }
+  };
 
-// 3. JSX mein button ko update karo
-
+  // 3. JSX mein button ko update karo
 
   if (!idea) {
     return (

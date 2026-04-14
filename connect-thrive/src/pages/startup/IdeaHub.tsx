@@ -43,7 +43,7 @@ const IdeaHub = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:5000/api/startup/ideas",
+        "https://connecto-2.onrender.com/api/startup/ideas",
       );
 
       // Backend se jo skills string (JSON) aayegi use parse karna padega

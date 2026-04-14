@@ -66,7 +66,7 @@ const SKILL_COLORS = [
 const skillColor = (i: number) => SKILL_COLORS[i % SKILL_COLORS.length];
 
 // const API = "https://connecto-2.onrender.com";
-const API = "http://localhost:5000";
+const API = "https://connecto-2.onrender.com";
 
 // ─── Slot bar component ────────────────────────────────────────────────────
 const SlotBar = ({ filled, total }: { filled: number; total: number }) => (
@@ -111,20 +111,29 @@ const CreateRoomModal = ({
 
   const handleSubmit = async () => {
     if (!form.hackathon_name.trim())
-      return toast({ variant: "destructive", title: "Hackathon name required" });
+      return toast({
+        variant: "destructive",
+        title: "Hackathon name required",
+      });
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       await axios.post(
         `${API}/api/hackathons/rooms`,
         { ...form, required_skills: skills },
-        { headers: { Authorization: token } }
+        { headers: { Authorization: token } },
       );
-      toast({ title: "🚀 Room created!", description: "Your hackathon room is live." });
+      toast({
+        title: "🚀 Room created!",
+        description: "Your hackathon room is live.",
+      });
       onCreated();
       onClose();
     } catch (err: any) {
-      toast({ variant: "destructive", title: err.response?.data?.message || "Failed" });
+      toast({
+        variant: "destructive",
+        title: err.response?.data?.message || "Failed",
+      });
     } finally {
       setLoading(false);
     }
@@ -137,7 +146,10 @@ const CreateRoomModal = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <motion.div
         className="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#0d0d1a] p-6 shadow-2xl"
         initial={{ scale: 0.9, y: 20 }}
@@ -151,51 +163,70 @@ const CreateRoomModal = ({
               <Rocket className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-lg text-white">Create Hackathon Room</h2>
+              <h2 className="font-bold text-lg text-white">
+                Create Hackathon Room
+              </h2>
               <p className="text-xs text-white/40">Find your dream team</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="text-white/40 hover:text-white transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Hackathon Name *</label>
+            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">
+              Hackathon Name *
+            </label>
             <Input
               placeholder="e.g. Smart India Hackathon 2025"
               value={form.hackathon_name}
-              onChange={(e) => setForm({ ...form, hackathon_name: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, hackathon_name: e.target.value })
+              }
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
             />
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Description</label>
+            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">
+              Description
+            </label>
             <textarea
               rows={2}
               placeholder="What are you building? What kind of teammates do you need?"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               className="w-full rounded-md bg-white/5 border border-white/10 text-white placeholder:text-white/30 p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-cyan-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Team Size</label>
+              <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">
+                Team Size
+              </label>
               <Input
                 type="number"
                 min={2}
                 max={10}
                 value={form.team_size}
-                onChange={(e) => setForm({ ...form, team_size: parseInt(e.target.value) || 4 })}
+                onChange={(e) =>
+                  setForm({ ...form, team_size: parseInt(e.target.value) || 4 })
+                }
                 className="bg-white/5 border-white/10 text-white"
               />
             </div>
             <div>
-              <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Deadline</label>
+              <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">
+                Deadline
+              </label>
               <Input
                 type="date"
                 value={form.deadline}
@@ -206,7 +237,9 @@ const CreateRoomModal = ({
           </div>
 
           <div>
-            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Required Skills</label>
+            <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">
+              Required Skills
+            </label>
             <div className="flex gap-2">
               <Input
                 placeholder="e.g. React, ML, Node.js"
@@ -215,7 +248,11 @@ const CreateRoomModal = ({
                 onKeyDown={(e) => e.key === "Enter" && addSkill()}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
               />
-              <Button onClick={addSkill} variant="outline" className="border-white/10 text-white/70 hover:bg-white/10 shrink-0">
+              <Button
+                onClick={addSkill}
+                variant="outline"
+                className="border-white/10 text-white/70 hover:bg-white/10 shrink-0"
+              >
                 Add
               </Button>
             </div>
@@ -227,7 +264,9 @@ const CreateRoomModal = ({
                     className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs border ${skillColor(i)}`}
                   >
                     {s}
-                    <button onClick={() => setSkills(skills.filter((x) => x !== s))}>
+                    <button
+                      onClick={() => setSkills(skills.filter((x) => x !== s))}
+                    >
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -266,13 +305,23 @@ const RoomCard = ({
 
   const handleJoinRequest = async () => {
     try {
-      await axios.post(`${API}/api/hackathons/rooms/${room.id}/request`, {}, {
-        headers: { Authorization: token },
+      await axios.post(
+        `${API}/api/hackathons/rooms/${room.id}/request`,
+        {},
+        {
+          headers: { Authorization: token },
+        },
+      );
+      toast({
+        title: "✅ Request sent!",
+        description: "Waiting for creator's approval.",
       });
-      toast({ title: "✅ Request sent!", description: "Waiting for creator's approval." });
       onRefresh();
     } catch (err: any) {
-      toast({ variant: "destructive", title: err.response?.data?.message || "Failed" });
+      toast({
+        variant: "destructive",
+        title: err.response?.data?.message || "Failed",
+      });
     }
   };
 
@@ -292,9 +341,12 @@ const RoomCard = ({
   const fetchRequests = async () => {
     setLoadingReqs(true);
     try {
-      const res = await axios.get(`${API}/api/hackathons/rooms/${room.id}/requests`, {
-        headers: { Authorization: token },
-      });
+      const res = await axios.get(
+        `${API}/api/hackathons/rooms/${room.id}/requests`,
+        {
+          headers: { Authorization: token },
+        },
+      );
       setRequests(res.data);
     } catch {
       /* ignore if not creator */
@@ -303,18 +355,27 @@ const RoomCard = ({
     }
   };
 
-  const handleRequestAction = async (memberId: number, action: "accept" | "reject") => {
+  const handleRequestAction = async (
+    memberId: number,
+    action: "accept" | "reject",
+  ) => {
     try {
       await axios.patch(
         `${API}/api/hackathons/rooms/${room.id}/requests/${memberId}`,
         { action },
-        { headers: { Authorization: token } }
+        { headers: { Authorization: token } },
       );
-      toast({ title: action === "accept" ? "✅ Member accepted!" : "❌ Request rejected" });
+      toast({
+        title:
+          action === "accept" ? "✅ Member accepted!" : "❌ Request rejected",
+      });
       fetchRequests();
       onRefresh();
     } catch (err: any) {
-      toast({ variant: "destructive", title: err.response?.data?.message || "Failed" });
+      toast({
+        variant: "destructive",
+        title: err.response?.data?.message || "Failed",
+      });
     }
   };
 
@@ -335,8 +396,8 @@ const RoomCard = ({
         room.is_full
           ? "border-white/5 opacity-70"
           : room.is_creator
-          ? "border-cyan-500/30"
-          : "border-white/10 hover:border-white/20"
+            ? "border-cyan-500/30"
+            : "border-white/10 hover:border-white/20"
       }`}
     >
       {/* Top accent bar */}
@@ -345,8 +406,8 @@ const RoomCard = ({
           room.is_creator
             ? "bg-gradient-to-r from-cyan-500 to-blue-600"
             : room.is_full
-            ? "bg-gradient-to-r from-gray-600 to-gray-700"
-            : "bg-gradient-to-r from-purple-500 to-pink-600"
+              ? "bg-gradient-to-r from-gray-600 to-gray-700"
+              : "bg-gradient-to-r from-purple-500 to-pink-600"
         }`}
       />
 
@@ -355,7 +416,9 @@ const RoomCard = ({
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className="font-bold text-white text-base truncate">{room.hackathon_name}</h3>
+              <h3 className="font-bold text-white text-base truncate">
+                {room.hackathon_name}
+              </h3>
               {room.is_creator && (
                 <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold uppercase tracking-wider">
                   Your Room
@@ -398,21 +461,30 @@ const RoomCard = ({
               onClick={toggleExpand}
               className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
             >
-              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {expanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>
 
         {/* Description */}
         {room.description && (
-          <p className="text-sm text-white/50 mb-3 line-clamp-2">{room.description}</p>
+          <p className="text-sm text-white/50 mb-3 line-clamp-2">
+            {room.description}
+          </p>
         )}
 
         {/* Skills */}
         {room.required_skills.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {room.required_skills.map((s, i) => (
-              <span key={s} className={`px-2 py-0.5 rounded-full text-[11px] border ${skillColor(i)}`}>
+              <span
+                key={s}
+                className={`px-2 py-0.5 rounded-full text-[11px] border ${skillColor(i)}`}
+              >
                 {s}
               </span>
             ))}
@@ -423,10 +495,13 @@ const RoomCard = ({
         <div className="mb-3">
           <div className="flex justify-between text-[11px] text-white/40 mb-1">
             <span className="flex items-center gap-1">
-              <Users className="w-3 h-3" /> {room.current_members}/{room.team_size} members
+              <Users className="w-3 h-3" /> {room.current_members}/
+              {room.team_size} members
             </span>
             {!room.is_full && (
-              <span className="text-cyan-400">{spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} left</span>
+              <span className="text-cyan-400">
+                {spotsLeft} spot{spotsLeft !== 1 ? "s" : ""} left
+              </span>
             )}
           </div>
           <SlotBar filled={room.current_members} total={room.team_size} />
@@ -441,8 +516,8 @@ const RoomCard = ({
               room.is_full
                 ? "bg-white/5 text-white/20 cursor-not-allowed"
                 : room.has_requested
-                ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white"
+                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/30 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white"
             }`}
           >
             {room.is_full ? (
@@ -471,10 +546,14 @@ const RoomCard = ({
               <div className="mt-4 pt-4 border-t border-white/10">
                 <p className="text-xs text-white/40 uppercase tracking-wider mb-3 flex items-center gap-1">
                   <UserCheck className="w-3 h-3" /> Join Requests
-                  {loadingReqs && <span className="ml-1 text-cyan-400">Loading...</span>}
+                  {loadingReqs && (
+                    <span className="ml-1 text-cyan-400">Loading...</span>
+                  )}
                 </p>
                 {requests.length === 0 ? (
-                  <p className="text-xs text-white/30 italic">No pending requests.</p>
+                  <p className="text-xs text-white/30 italic">
+                    No pending requests.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {requests.map((r) => (
@@ -483,10 +562,15 @@ const RoomCard = ({
                         className="flex items-center justify-between gap-3 bg-white/5 rounded-xl p-3"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white">{r.username}</p>
+                          <p className="text-sm font-medium text-white">
+                            {r.username}
+                          </p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {r.skills.slice(0, 4).map((s, i) => (
-                              <span key={s} className={`px-1.5 py-0.5 rounded-full text-[10px] border ${skillColor(i)}`}>
+                              <span
+                                key={s}
+                                className={`px-1.5 py-0.5 rounded-full text-[10px] border ${skillColor(i)}`}
+                              >
                                 {s}
                               </span>
                             ))}
@@ -553,9 +637,13 @@ export const SkillsEditor = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`${API}/api/hackathons/skills`, { skills }, {
-        headers: { Authorization: token },
-      });
+      await axios.put(
+        `${API}/api/hackathons/skills`,
+        { skills },
+        {
+          headers: { Authorization: token },
+        },
+      );
       toast({ title: "✅ Skills saved!" });
     } catch {
       toast({ variant: "destructive", title: "Failed to save skills" });
@@ -572,7 +660,9 @@ export const SkillsEditor = () => {
         </div>
         <div>
           <h3 className="font-semibold text-white">Your Skills</h3>
-          <p className="text-xs text-white/40">Used for hackathon team matching</p>
+          <p className="text-xs text-white/40">
+            Used for hackathon team matching
+          </p>
         </div>
       </div>
 
@@ -584,7 +674,11 @@ export const SkillsEditor = () => {
           onKeyDown={(e) => e.key === "Enter" && addSkill()}
           className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
         />
-        <Button onClick={addSkill} variant="outline" className="border-white/10 text-white/70 hover:bg-white/10 shrink-0">
+        <Button
+          onClick={addSkill}
+          variant="outline"
+          className="border-white/10 text-white/70 hover:bg-white/10 shrink-0"
+        >
           <Plus className="w-4 h-4" />
         </Button>
       </div>
@@ -599,7 +693,10 @@ export const SkillsEditor = () => {
               className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs border ${skillColor(i)}`}
             >
               {s}
-              <button onClick={() => removeSkill(s)} className="opacity-60 hover:opacity-100">
+              <button
+                onClick={() => removeSkill(s)}
+                className="opacity-60 hover:opacity-100"
+              >
                 <X className="w-3 h-3" />
               </button>
             </motion.span>
@@ -636,7 +733,9 @@ const HackathonTab = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const params = skillFilter ? `?skill=${encodeURIComponent(skillFilter)}` : "";
+      const params = skillFilter
+        ? `?skill=${encodeURIComponent(skillFilter)}`
+        : "";
       const res = await axios.get(`${API}/api/hackathons/rooms${params}`, {
         headers: { Authorization: token },
       });
@@ -689,10 +788,15 @@ const HackathonTab = () => {
               </span>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-              Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Dream Team</span>
+              Find Your{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Dream Team
+              </span>
             </h2>
             <p className="text-white/50 text-sm max-w-md">
-              Create a room, specify required skills, and build the perfect hackathon squad. Or browse open teams looking for talent like yours.
+              Create a room, specify required skills, and build the perfect
+              hackathon squad. Or browse open teams looking for talent like
+              yours.
             </p>
           </div>
           <Button
@@ -723,7 +827,10 @@ const HackathonTab = () => {
           </Button>
           {searchSkill && (
             <Button
-              onClick={() => { setSearchSkill(""); fetchRooms(); }}
+              onClick={() => {
+                setSearchSkill("");
+                fetchRooms();
+              }}
               variant="ghost"
               className="text-white/40 hover:text-white shrink-0 px-2"
             >
@@ -752,13 +859,33 @@ const HackathonTab = () => {
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total Rooms", value: rooms.length, icon: Rocket, color: "text-cyan-400" },
-          { label: "Open Rooms", value: rooms.filter((r) => !r.is_full).length, icon: Users, color: "text-emerald-400" },
-          { label: "My Teams", value: rooms.filter((r) => r.is_creator || r.is_member).length, icon: Target, color: "text-purple-400" },
+          {
+            label: "Total Rooms",
+            value: rooms.length,
+            icon: Rocket,
+            color: "text-cyan-400",
+          },
+          {
+            label: "Open Rooms",
+            value: rooms.filter((r) => !r.is_full).length,
+            icon: Users,
+            color: "text-emerald-400",
+          },
+          {
+            label: "My Teams",
+            value: rooms.filter((r) => r.is_creator || r.is_member).length,
+            icon: Target,
+            color: "text-purple-400",
+          },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center">
+          <div
+            key={stat.label}
+            className="rounded-xl border border-white/10 bg-white/[0.03] p-3 text-center"
+          >
             <stat.icon className={`w-4 h-4 mx-auto mb-1 ${stat.color}`} />
-            <div className={`text-xl font-bold ${stat.color}`}>{stat.value}</div>
+            <div className={`text-xl font-bold ${stat.color}`}>
+              {stat.value}
+            </div>
             <div className="text-[11px] text-white/30">{stat.label}</div>
           </div>
         ))}
@@ -768,7 +895,10 @@ const HackathonTab = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.02] h-48 animate-pulse" />
+            <div
+              key={i}
+              className="rounded-2xl border border-white/5 bg-white/[0.02] h-48 animate-pulse"
+            />
           ))}
         </div>
       ) : filteredRooms.length === 0 ? (
@@ -782,8 +912,8 @@ const HackathonTab = () => {
             {filter === "mine"
               ? "You haven't joined or created any rooms yet."
               : searchSkill
-              ? `No rooms found requiring "${searchSkill}".`
-              : "No hackathon rooms yet. Be the first to create one!"}
+                ? `No rooms found requiring "${searchSkill}".`
+                : "No hackathon rooms yet. Be the first to create one!"}
           </p>
         </motion.div>
       ) : (
