@@ -69,7 +69,6 @@ const allCommunities = [
 
 const Communities = () => {
   const [search, setSearch] = useState("");
-  const [members, setMembers] = useState(0);
 
   const [membersMap, setMembersMap] = useState<Record<number, number>>({});
 
@@ -82,36 +81,33 @@ const Communities = () => {
   const fetchCommunities = async () => {
     try {
       const token = localStorage.getItem("token");
+  
       const res = await axios.get(
         "https://connecto-2.onrender.com/api/communities/my-communities",
         {
           headers: { Authorization: token },
-        },
+        }
       );
-
-      console.log("COMMUNITIES:", res.data);
-
+  
+      const ids = res.data?.communities || [];
+  
       const map: Record<number, number> = {};
-
-      const data = res.data?.communities || [];
-      data.forEach((c: any) => {
-        map[c.id] = c.members;
-      });
-
+  
+      // fetch members count for each community
+      await Promise.all(
+        ids.map(async (id: number) => {
+          const res = await axios.get(
+            `https://connecto-2.onrender.com/api/communities/${id}/members-count`
+          );
+  
+          map[id] = res.data.membersCount;
+        })
+      );
+  
+      console.log("FINAL MAP:", map);
       setMembersMap(map);
     } catch (err) {
       console.error("Fetch Communities Error:", err);
-    }
-  };
-  const fetchMembersCount = async () => {
-    try {
-      const res = await axios.get(
-        `https://connecto-2.onrender.com/api/communities/${id}/members-count`,
-      );
-
-      setMembers(res.data.membersCount);
-    } catch (err) {
-      console.error("Members count error:", err);
     }
   };
   //////////////////////////////////////////////////////
@@ -167,7 +163,6 @@ const Communities = () => {
   useEffect(() => {
     fetchCommunities();
     fetchJoined();
-    fetchMembersCount();
   }, []);
 
   //////////////////////////////////////////////////////
@@ -207,9 +202,7 @@ const Communities = () => {
                 key={community.id}
                 {...community}
                 index={index}
-                members={members}
-                isJoined={joinedCommunities.includes(community.id)}
-                onToggleJoin={handleToggleJoin}
+                members={membersMap[community.id] || 0}
               />
             ))}
           </div>

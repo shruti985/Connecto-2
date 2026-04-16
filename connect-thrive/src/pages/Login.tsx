@@ -10,7 +10,7 @@ import axios from "axios";
 
 const API_ROOT =
   window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
+    ? "https://connecto-2.onrender.com/api"
     : "https://connecto-2.onrender.com/api";
 
 const Login = () => {
@@ -27,29 +27,23 @@ const Login = () => {
 
     try {
       // 1. Backend ko request bhejna
-      const response = await axios.post(
-        `${API_ROOT}/auth/login`,
-        {
-          email,
-          password,
-        },
-      );
+      const response = await axios.post(`${API_ROOT}/auth/login`, {
+        email,
+        password,
+      });
 
       const { token, user } = response.data;
 
-// Token save
-localStorage.setItem("token", token);
+      // Token save
+      localStorage.setItem("token", token);
 
-// Username save (optional)
-localStorage.setItem("username", user.username);
+      // Username save (optional)
+      localStorage.setItem("username", user.username);
 
-// ⭐ MOST IMPORTANT — user object save
-localStorage.setItem(
-  "user",
-  JSON.stringify(user)
-);
+      // ⭐ MOST IMPORTANT — user object save
+      localStorage.setItem("user", JSON.stringify(user));
 
-console.log("Saved User:", user);
+      console.log("Saved User:", user);
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",

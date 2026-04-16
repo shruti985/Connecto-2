@@ -7,65 +7,109 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Search, SlidersHorizontal, X, UserPlus, Check, Zap, Users, TrendingUp, Star } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  X,
+  UserPlus,
+  Check,
+  Zap,
+  Users,
+  TrendingUp,
+  Star,
+} from "lucide-react";
 
-const API = "http://localhost:5000/api/users";
+const API = "https://connecto-2.onrender.com/api/users";
 
 const AVATAR_PALETTE = [
-  { bg: "bg-travel/20",   ring: "ring-travel/40",   text: "text-travel"   },
-  { bg: "bg-startup/20",  ring: "ring-startup/40",  text: "text-startup"  },
+  { bg: "bg-travel/20", ring: "ring-travel/40", text: "text-travel" },
+  { bg: "bg-startup/20", ring: "ring-startup/40", text: "text-startup" },
   { bg: "bg-wellness/20", ring: "ring-wellness/40", text: "text-wellness" },
-  { bg: "bg-dsa/20",      ring: "ring-dsa/40",      text: "text-dsa"      },
-  { bg: "bg-gym/20",      ring: "ring-gym/40",      text: "text-gym"      },
-  { bg: "bg-primary/20",  ring: "ring-primary/40",  text: "text-primary"  },
+  { bg: "bg-dsa/20", ring: "ring-dsa/40", text: "text-dsa" },
+  { bg: "bg-gym/20", ring: "ring-gym/40", text: "text-gym" },
+  { bg: "bg-primary/20", ring: "ring-primary/40", text: "text-primary" },
 ];
 
-const COMMUNITY_FILTERS = ["All", "Startup", "Travel", "Wellness", "DSA", "Gym"];
+const COMMUNITY_FILTERS = [
+  "All",
+  "Startup",
+  "Travel",
+  "Wellness",
+  "DSA",
+  "Gym",
+];
 const SCORE_FILTERS = [
-  { label: "All",  min: 0  },
+  { label: "All", min: 0 },
   { label: "70%+", min: 70 },
   { label: "80%+", min: 80 },
   { label: "90%+", min: 90 },
 ];
 
 function scoreAccent(s) {
-  if (s >= 85) return {
-    text:     "text-primary",
-    barStyle: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)))",
-    topStyle: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)))",
-    badge:    "bg-primary/20 text-primary border-primary/30",
-  };
-  if (s >= 70) return {
-    text:     "text-green-400",
-    barStyle: "linear-gradient(90deg, #22c55e, #10b981)",
-    topStyle: "linear-gradient(90deg, #22c55e, #10b981)",
-    badge:    "bg-green-500/15 text-green-400 border-green-500/30",
-  };
-  if (s >= 50) return {
-    text:     "text-yellow-400",
-    barStyle: "linear-gradient(90deg, #eab308, #f97316)",
-    topStyle: "linear-gradient(90deg, #eab308, #f97316)",
-    badge:    "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
-  };
+  if (s >= 85)
+    return {
+      text: "text-primary",
+      barStyle:
+        "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)))",
+      topStyle:
+        "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)))",
+      badge: "bg-primary/20 text-primary border-primary/30",
+    };
+  if (s >= 70)
+    return {
+      text: "text-green-400",
+      barStyle: "linear-gradient(90deg, #22c55e, #10b981)",
+      topStyle: "linear-gradient(90deg, #22c55e, #10b981)",
+      badge: "bg-green-500/15 text-green-400 border-green-500/30",
+    };
+  if (s >= 50)
+    return {
+      text: "text-yellow-400",
+      barStyle: "linear-gradient(90deg, #eab308, #f97316)",
+      topStyle: "linear-gradient(90deg, #eab308, #f97316)",
+      badge: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+    };
   return {
-    text:     "text-secondary",
+    text: "text-secondary",
     barStyle: "linear-gradient(90deg, hsl(var(--secondary)), #a855f7)",
     topStyle: "linear-gradient(90deg, hsl(var(--secondary)), #a855f7)",
-    badge:    "bg-secondary/15 text-secondary border-secondary/30",
+    badge: "bg-secondary/15 text-secondary border-secondary/30",
   };
 }
 
 // ── Match card ─────────────────────────────────────────────────
 function MatchCard({ match, index, onConnect, connected }) {
-  const palette  = AVATAR_PALETTE[index % AVATAR_PALETTE.length];
-  const initials = match.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  const accent   = scoreAccent(match.score);
+  const palette = AVATAR_PALETTE[index % AVATAR_PALETTE.length];
+  const initials = match.name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const accent = scoreAccent(match.score);
 
   const interestTags = [
-    ...(match.fields  || []).slice(0, 1).map((l) => ({ l, cls: "bg-primary/10 text-primary border-primary/25"           })),
-    ...(match.sports  || []).slice(0, 1).map((l) => ({ l, cls: "bg-orange-500/10 text-orange-400 border-orange-500/25"  })),
-    ...(match.hobbies || []).slice(0, 1).map((l) => ({ l, cls: "bg-secondary/10 text-secondary border-secondary/25"     })),
-    ...(match.travel  || []).slice(0, 1).map((l) => ({ l, cls: "bg-green-500/10 text-green-400 border-green-500/25"     })),
+    ...(match.fields || [])
+      .slice(0, 1)
+      .map((l) => ({ l, cls: "bg-primary/10 text-primary border-primary/25" })),
+    ...(match.sports || [])
+      .slice(0, 1)
+      .map((l) => ({
+        l,
+        cls: "bg-orange-500/10 text-orange-400 border-orange-500/25",
+      })),
+    ...(match.hobbies || [])
+      .slice(0, 1)
+      .map((l) => ({
+        l,
+        cls: "bg-secondary/10 text-secondary border-secondary/25",
+      })),
+    ...(match.travel || [])
+      .slice(0, 1)
+      .map((l) => ({
+        l,
+        cls: "bg-green-500/10 text-green-400 border-green-500/25",
+      })),
   ].slice(0, 3);
 
   return (
@@ -77,18 +121,21 @@ function MatchCard({ match, index, onConnect, connected }) {
       className="glass-card flex flex-col overflow-hidden group hover:border-primary/30 transition-colors duration-300"
     >
       {/* Thin top accent line */}
-      <div className="h-0.5 w-full flex-shrink-0 opacity-70"
-        style={{ background: accent.topStyle }} />
+      <div
+        className="h-0.5 w-full flex-shrink-0 opacity-70"
+        style={{ background: accent.topStyle }}
+      />
 
       <div className="p-6 flex flex-col flex-1">
-
         {/* ── ROW 1: Avatar + name + score badge ── */}
         <div className="flex items-center gap-4 mb-5">
-          <div className={`
+          <div
+            className={`
             w-14 h-14 rounded-2xl flex items-center justify-center
             text-base font-black tracking-wide flex-shrink-0
             ring-2 ${palette.ring} ${palette.bg} ${palette.text}
-          `}>
+          `}
+          >
             {initials}
           </div>
           <div className="flex-1 min-w-0">
@@ -99,7 +146,9 @@ function MatchCard({ match, index, onConnect, connected }) {
               {match.hometown || "NIT Kurukshetra"}
             </p>
           </div>
-          <span className={`flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border ${accent.badge}`}>
+          <span
+            className={`flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-full border ${accent.badge}`}
+          >
             {match.score}% match
           </span>
         </div>
@@ -107,8 +156,12 @@ function MatchCard({ match, index, onConnect, connected }) {
         {/* ── ROW 2: Score bar ── */}
         <div className="mb-5">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-medium text-muted-foreground">Match Score</span>
-            <span className={`text-xs font-bold ${accent.text}`}>{match.score}%</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Match Score
+            </span>
+            <span className={`text-xs font-bold ${accent.text}`}>
+              {match.score}%
+            </span>
           </div>
           <div className="h-2 w-full rounded-full bg-muted/40 overflow-hidden">
             <motion.div
@@ -116,7 +169,11 @@ function MatchCard({ match, index, onConnect, connected }) {
               style={{ background: accent.barStyle }}
               initial={{ width: 0 }}
               animate={{ width: `${match.score}%` }}
-              transition={{ duration: 0.9, delay: index * 0.06 + 0.25, ease: "easeOut" }}
+              transition={{
+                duration: 0.9,
+                delay: index * 0.06 + 0.25,
+                ease: "easeOut",
+              }}
             />
           </div>
         </div>
@@ -124,7 +181,9 @@ function MatchCard({ match, index, onConnect, connected }) {
         {/* ── ROW 3: Why match ── */}
         {match.why && (
           <div className="bg-muted/20 border border-border border-l-2 border-l-primary/50 rounded-xl px-4 py-3 mb-5">
-            <p className="text-sm text-muted-foreground leading-relaxed">{match.why}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {match.why}
+            </p>
           </div>
         )}
 
@@ -132,12 +191,18 @@ function MatchCard({ match, index, onConnect, connected }) {
         {((match.shared || []).length > 0 || interestTags.length > 0) && (
           <div className="flex flex-wrap gap-2 mb-6">
             {(match.shared || []).map((s) => (
-              <span key={s} className={`text-xs px-3 py-1.5 rounded-full border font-medium ${accent.badge}`}>
+              <span
+                key={s}
+                className={`text-xs px-3 py-1.5 rounded-full border font-medium ${accent.badge}`}
+              >
                 {s}
               </span>
             ))}
             {interestTags.map(({ l, cls }) => (
-              <span key={l} className={`text-xs px-3 py-1.5 rounded-full border font-medium ${cls}`}>
+              <span
+                key={l}
+                className={`text-xs px-3 py-1.5 rounded-full border font-medium ${cls}`}
+              >
                 {l}
               </span>
             ))}
@@ -157,10 +222,15 @@ function MatchCard({ match, index, onConnect, connected }) {
               : "btn-glow"
           }`}
         >
-          {connected
-            ? <><Check className="w-4 h-4 mr-2" /> Connected</>
-            : <><UserPlus className="w-4 h-4 mr-2" /> Connect</>
-          }
+          {connected ? (
+            <>
+              <Check className="w-4 h-4 mr-2" /> Connected
+            </>
+          ) : (
+            <>
+              <UserPlus className="w-4 h-4 mr-2" /> Connect
+            </>
+          )}
         </Button>
       </div>
     </motion.div>
@@ -214,48 +284,59 @@ function FilterChip({ label, active, onClick }) {
 
 // ── Main page ───────────────────────────────────────────────────
 export default function FindYourMatch() {
-  const navigate      = useNavigate();
-  const { toast }     = useToast();
-  const [matches,     setMatches]     = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [connected,   setConnected]   = useState(new Set());
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(new Set());
   const [showFilters, setShowFilters] = useState(false);
-  const [search,      setSearch]      = useState("");
-  const [community,   setCommunity]   = useState("All");
-  const [minScore,    setMinScore]    = useState(0);
+  const [search, setSearch] = useState("");
+  const [community, setCommunity] = useState("All");
+  const [minScore, setMinScore] = useState(0);
   const [sportFilter, setSportFilter] = useState("");
   const [hobbyFilter, setHobbyFilter] = useState("");
   const [fieldFilter, setFieldFilter] = useState("");
 
-  const token   = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
-    if (!token) { navigate("/login"); return; }
+    if (!token) {
+      navigate("/login");
+      return;
+    }
     const params = {};
     if (community !== "All") params.community = community;
-    if (sportFilter)         params.sport     = sportFilter;
-    if (hobbyFilter)         params.hobby     = hobbyFilter;
-    if (fieldFilter)         params.field     = fieldFilter;
-    if (minScore > 0)        params.minScore  = String(minScore);
+    if (sportFilter) params.sport = sportFilter;
+    if (hobbyFilter) params.hobby = hobbyFilter;
+    if (fieldFilter) params.field = fieldFilter;
+    if (minScore > 0) params.minScore = String(minScore);
 
     setLoading(true);
-    axios.get(`${API}/matches`, { headers, params })
+    axios
+      .get(`${API}/matches`, { headers, params })
       .then((r) => setMatches(r.data))
-      .catch(() => toast({ variant: "destructive", title: "Error", description: "Could not load matches" }))
+      .catch(() =>
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Could not load matches",
+        }),
+      )
       .finally(() => setLoading(false));
   }, [community, minScore, sportFilter, hobbyFilter, fieldFilter]);
 
   const visible = useMemo(() => {
     if (!search.trim()) return matches;
     const q = search.toLowerCase();
-    return matches.filter((m) =>
-      m.name.toLowerCase().includes(q) ||
-      (m.hometown    || "").toLowerCase().includes(q) ||
-      (m.communities || []).some((c) => c.toLowerCase().includes(q)) ||
-      (m.fields      || []).some((f) => f.toLowerCase().includes(q)) ||
-      (m.hobbies     || []).some((h) => h.toLowerCase().includes(q)) ||
-      (m.sports      || []).some((s) => s.toLowerCase().includes(q))
+    return matches.filter(
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        (m.hometown || "").toLowerCase().includes(q) ||
+        (m.communities || []).some((c) => c.toLowerCase().includes(q)) ||
+        (m.fields || []).some((f) => f.toLowerCase().includes(q)) ||
+        (m.hobbies || []).some((h) => h.toLowerCase().includes(q)) ||
+        (m.sports || []).some((s) => s.toLowerCase().includes(q)),
     );
   }, [matches, search]);
 
@@ -266,24 +347,39 @@ export default function FindYourMatch() {
       setConnected((p) => new Set([...p, id]));
       toast({ title: "Request sent! 🎉", description: "They'll be notified." });
     } catch {
-      toast({ variant: "destructive", title: "Error", description: "Could not send request" });
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not send request",
+      });
     }
   }
 
   function clearFilters() {
-    setCommunity("All"); setMinScore(0);
-    setSportFilter(""); setHobbyFilter(""); setFieldFilter(""); setSearch("");
+    setCommunity("All");
+    setMinScore(0);
+    setSportFilter("");
+    setHobbyFilter("");
+    setFieldFilter("");
+    setSearch("");
   }
 
-  const hasFilters = community !== "All" || minScore > 0 || sportFilter || hobbyFilter || fieldFilter || search;
-  const topScore   = matches.length ? Math.max(...matches.map((m) => m.score)) : 0;
+  const hasFilters =
+    community !== "All" ||
+    minScore > 0 ||
+    sportFilter ||
+    hobbyFilter ||
+    fieldFilter ||
+    search;
+  const topScore = matches.length
+    ? Math.max(...matches.map((m) => m.score))
+    : 0;
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
-
           {/* ── Header ── */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -303,14 +399,36 @@ export default function FindYourMatch() {
             {!loading && matches.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-5">
                 {[
-                  { icon: Users,      value: matches.length, label: "Students",  cls: "text-primary"    },
-                  { icon: TrendingUp, value: visible.length, label: "Showing",   cls: "text-secondary"  },
-                  { icon: Star,       value: `${topScore}%`, label: "Top score", cls: "text-yellow-400" },
+                  {
+                    icon: Users,
+                    value: matches.length,
+                    label: "Students",
+                    cls: "text-primary",
+                  },
+                  {
+                    icon: TrendingUp,
+                    value: visible.length,
+                    label: "Showing",
+                    cls: "text-secondary",
+                  },
+                  {
+                    icon: Star,
+                    value: `${topScore}%`,
+                    label: "Top score",
+                    cls: "text-yellow-400",
+                  },
                 ].map(({ icon: Icon, value, label, cls }) => (
-                  <div key={label} className="glass-card px-4 sm:px-5 py-3 flex items-center gap-3 min-h-[68px]">
+                  <div
+                    key={label}
+                    className="glass-card px-4 sm:px-5 py-3 flex items-center gap-3 min-h-[68px]"
+                  >
                     <Icon className={`w-4 h-4 ${cls}`} />
-                    <span className="font-display font-bold text-lg text-foreground">{value}</span>
-                    <span className="text-sm text-muted-foreground">{label}</span>
+                    <span className="font-display font-bold text-lg text-foreground">
+                      {value}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -333,21 +451,32 @@ export default function FindYourMatch() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full h-11 bg-background/80 border border-border rounded-xl pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground/90 caret-primary focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all"
-                  style={{ color: "hsl(var(--foreground))", WebkitTextFillColor: "hsl(var(--foreground))" }}
+                  style={{
+                    color: "hsl(var(--foreground))",
+                    WebkitTextFillColor: "hsl(var(--foreground))",
+                  }}
                 />
               </div>
               <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3">
                 <Button
-                  variant="outline" size="sm"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setShowFilters((v) => !v)}
                   className={`h-11 px-4 gap-2 flex-1 sm:flex-none ${showFilters || hasFilters ? "border-primary/50 text-primary bg-primary/10" : ""}`}
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                   Filters
-                  {hasFilters && <span className="w-2 h-2 rounded-full bg-primary" />}
+                  {hasFilters && (
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                  )}
                 </Button>
                 {hasFilters && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="h-11 px-3 text-muted-foreground gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="h-11 px-3 text-muted-foreground gap-1.5"
+                  >
                     <X className="w-3.5 h-3.5" /> Clear
                   </Button>
                 )}
@@ -365,32 +494,71 @@ export default function FindYourMatch() {
                 >
                   <div className="px-4 sm:px-5 pt-1 pb-5 space-y-5 border-t border-border">
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 mt-4">Community</p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3 mt-4">
+                        Community
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {COMMUNITY_FILTERS.map((cf) => (
-                          <FilterChip key={cf} label={cf} active={community === cf} onClick={() => setCommunity(cf)} />
+                          <FilterChip
+                            key={cf}
+                            label={cf}
+                            active={community === cf}
+                            onClick={() => setCommunity(cf)}
+                          />
                         ))}
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Minimum match score</p>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+                        Minimum match score
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {SCORE_FILTERS.map(({ label, min }) => (
-                          <FilterChip key={label} label={label} active={minScore === min} onClick={() => setMinScore(min)} />
+                          <FilterChip
+                            key={label}
+                            label={label}
+                            active={minScore === min}
+                            onClick={() => setMinScore(min)}
+                          />
                         ))}
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {[
-                        { label: "Sport",            val: sportFilter, set: setSportFilter, ph: "e.g. Cricket" },
-                        { label: "Hobby",            val: hobbyFilter, set: setHobbyFilter, ph: "e.g. Gaming"  },
-                        { label: "Field / Interest", val: fieldFilter, set: setFieldFilter, ph: "e.g. AI & ML" },
+                        {
+                          label: "Sport",
+                          val: sportFilter,
+                          set: setSportFilter,
+                          ph: "e.g. Cricket",
+                        },
+                        {
+                          label: "Hobby",
+                          val: hobbyFilter,
+                          set: setHobbyFilter,
+                          ph: "e.g. Gaming",
+                        },
+                        {
+                          label: "Field / Interest",
+                          val: fieldFilter,
+                          set: setFieldFilter,
+                          ph: "e.g. AI & ML",
+                        },
                       ].map(({ label, val, set, ph }) => (
                         <div key={label}>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">{label}</p>
-                          <input type="text" placeholder={ph} value={val} onChange={(e) => set(e.target.value)}
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+                            {label}
+                          </p>
+                          <input
+                            type="text"
+                            placeholder={ph}
+                            value={val}
+                            onChange={(e) => set(e.target.value)}
                             className="w-full h-11 bg-background/80 border border-border rounded-xl px-4 text-sm text-foreground placeholder:text-muted-foreground/90 caret-primary focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all"
-                            style={{ color: "hsl(var(--foreground))", WebkitTextFillColor: "hsl(var(--foreground))" }} />
+                            style={{
+                              color: "hsl(var(--foreground))",
+                              WebkitTextFillColor: "hsl(var(--foreground))",
+                            }}
+                          />
                         </div>
                       ))}
                     </div>
@@ -403,29 +571,53 @@ export default function FindYourMatch() {
           {/* ── Grid ── */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
-              {[1,2,3,4,5,6].map((i) => <SkeletonCard key={i} />)}
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <SkeletonCard key={i} />
+              ))}
             </div>
           ) : visible.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
-              <div className="glass-card w-24 h-24 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6">🔍</div>
-              <h3 className="text-xl font-display font-semibold mb-2">No matches found</h3>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-24"
+            >
+              <div className="glass-card w-24 h-24 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6">
+                🔍
+              </div>
+              <h3 className="text-xl font-display font-semibold mb-2">
+                No matches found
+              </h3>
               <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-                {hasFilters ? "Try adjusting your filters." : "Complete your interest profile to get better matches."}
+                {hasFilters
+                  ? "Try adjusting your filters."
+                  : "Complete your interest profile to get better matches."}
               </p>
-              {hasFilters
-                ? <Button variant="outline" onClick={clearFilters}>Clear all filters</Button>
-                : <Button className="btn-glow" onClick={() => navigate("/onboarding")}><Zap className="w-4 h-4 mr-2" /> Complete your profile</Button>
-              }
+              {hasFilters ? (
+                <Button variant="outline" onClick={clearFilters}>
+                  Clear all filters
+                </Button>
+              ) : (
+                <Button
+                  className="btn-glow"
+                  onClick={() => navigate("/onboarding")}
+                >
+                  <Zap className="w-4 h-4 mr-2" /> Complete your profile
+                </Button>
+              )}
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
               {visible.map((match, i) => (
-                <MatchCard key={match.id} match={match} index={i}
-                  connected={connected.has(match.id)} onConnect={handleConnect} />
+                <MatchCard
+                  key={match.id}
+                  match={match}
+                  index={i}
+                  connected={connected.has(match.id)}
+                  onConnect={handleConnect}
+                />
               ))}
             </div>
           )}
-
         </div>
       </main>
       <Footer />

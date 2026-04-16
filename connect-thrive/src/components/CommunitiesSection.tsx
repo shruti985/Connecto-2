@@ -1,56 +1,121 @@
 import { motion } from "framer-motion";
 import { Plane, Code, Brain, Rocket, Dumbbell } from "lucide-react";
 import CommunityCard from "./CommunityCard";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const communities = [
   {
-    id: "travel",
+    id: 1,
+    slug: "travel",
     name: "Travel & Explore",
-    description: "Discover nearby campus places, cafes, weekend getaways, and find travel buddies. Share your adventures and plan trips together!",
+    description:
+      "Discover nearby campus places, cafes, weekend getaways, and find travel buddies.",
     icon: Plane,
-    members: 234,
     color: "text-travel",
     gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
   },
   {
-    id: "dsa",
+    id: 2,
+    slug: "dsa",
     name: "DSA & Coding",
-    description: "Master Data Structures & Algorithms together. Share resources, solve problems, participate in coding contests, and crack placements!",
+    description:
+      "Master Data Structures & Algorithms together and crack placements!",
     icon: Code,
-    members: 456,
     color: "text-dsa",
     gradient: "bg-gradient-to-br from-purple-500 to-pink-600",
   },
   {
-    id: "mental-wellness",
+    id: 3,
+    slug: "mental-wellness",
     name: "Mental Wellness",
-    description: "Your safe space for mental health. Join meditation sessions, share experiences, access wellness resources, and support each other.",
+    description: "Your safe space for mental health and support.",
     icon: Brain,
-    members: 189,
     color: "text-wellness",
     gradient: "bg-gradient-to-br from-green-500 to-emerald-600",
   },
   {
-    id: "startup",
+    id: 4,
+    slug: "startup",
     name: "Startup Hub",
-    description: "Connect with aspiring entrepreneurs, share startup ideas, find co-founders, get mentorship, and turn your ideas into reality!",
+    description: "Connect with entrepreneurs and build startups.",
     icon: Rocket,
-    members: 312,
     color: "text-startup",
     gradient: "bg-gradient-to-br from-orange-500 to-amber-600",
   },
   {
-    id: "gym",
+    id: 5,
+    slug: "gym",
     name: "Fitness & Gym",
-    description: "Find gym buddies, share workout routines, nutrition tips, track progress together, and stay motivated on your fitness journey!",
+    description: "Find workout partners and stay motivated.",
     icon: Dumbbell,
-    members: 278,
     color: "text-gym",
     gradient: "bg-gradient-to-br from-red-500 to-rose-600",
   },
 ];
-
 const CommunitiesSection = () => {
+  const [membersMap, setMembersMap] = useState<Record<number, number>>({});
+  const [joinedCommunities, setJoinedCommunities] = useState<number[]>([]);
+  const handleToggleJoin = async (id: number) => {
+    try {
+      console.log("Clicked community:", id);
+  
+      if (joinedCommunities.includes(id)) {
+        console.log("Leaving:", id);
+  
+        await axios.delete(`/api/communities/${id}/leave`);
+  
+        setJoinedCommunities((prev) => prev.filter((cid) => cid !== id));
+      } else {
+        console.log("Joining:", id);
+  
+        await axios.post(`/api/communities/${id}/join`);
+  
+        setJoinedCommunities((prev) => [...prev, id]);
+      }
+  
+      fetchCommunities();
+    } catch (err) {
+      console.error("JOIN ERROR:", err);
+  
+      alert(err.response?.data?.message || "Something went wrong");
+    }
+  };
+  const fetchCommunities = async () => {
+    try {
+      const token = localStorage.getItem("token");
+  
+      const res = await axios.get(
+        "https://connecto-2.onrender.com/api/communities/my-communities",
+        {
+          headers: { Authorization: token },
+        }
+      );
+  
+      const ids = res.data?.communities || [];
+  
+      const map: Record<number, number> = {};
+  
+      // fetch members count for each community
+      await Promise.all(
+        ids.map(async (id: number) => {
+          const res = await axios.get(
+            `https://connecto-2.onrender.com/api/communities/${id}/members-count`
+          );
+  
+          map[id] = res.data.membersCount;
+        })
+      );
+  
+      console.log("FINAL MAP:", map);
+      setMembersMap(map);
+    } catch (err) {
+      console.error("Fetch Communities Error:", err);
+    }
+  };
+  useEffect(() => {
+    fetchCommunities();
+  }, []);
   return (
     <section className="py-20 relative">
       <div className="container mx-auto px-4">
@@ -72,10 +137,15 @@ const CommunitiesSection = () => {
 
         {/* Communities grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {communities.map((community, index) => (
-            <CommunityCard key={community.id} {...community} index={index} />
-          ))}
-        </div>
+            {communities.map((community, index) => (
+              <CommunityCard
+                key={community.id}
+                {...community}
+                index={index}
+                members={membersMap[community.id] || 0}
+              />
+            ))}
+          </div>
       </div>
     </section>
   );

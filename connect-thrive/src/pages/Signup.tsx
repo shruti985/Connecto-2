@@ -10,7 +10,7 @@ import axios from "axios";
 
 const API_ROOT =
   window.location.hostname === "localhost"
-    ? "http://localhost:5000/api"
+    ? "https://connecto-2.onrender.com/api"
     : "https://connecto-2.onrender.com/api";
 const API_BASE = `${API_ROOT}/auth`;
 
@@ -292,7 +292,10 @@ const Signup = () => {
                   className="rounded border-border mt-1"
                   required
                 />
-                <label htmlFor="terms" className="text-sm text-muted-foreground">
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-muted-foreground"
+                >
                   I agree to the{" "}
                   <Link to="#" className="text-primary hover:underline">
                     Terms of Service
@@ -313,7 +316,11 @@ const Signup = () => {
                   <motion.div
                     className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 ) : (
                   <>
@@ -340,7 +347,8 @@ const Signup = () => {
                   required
                 />
                 <p className="text-sm text-muted-foreground">
-                  We sent a 6-digit code to <span className="text-foreground">{formData.email}</span>.
+                  We sent a 6-digit code to{" "}
+                  <span className="text-foreground">{formData.email}</span>.
                 </p>
               </div>
 
@@ -353,7 +361,11 @@ const Signup = () => {
                   <motion.div
                     className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 ) : (
                   "Verify & Create Account"

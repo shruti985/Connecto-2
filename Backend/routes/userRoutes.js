@@ -273,7 +273,6 @@ router.get("/all-buddies", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch buddies" });
   }
 });
-<<<<<<< HEAD
 router.get("/profile/:id", authMiddleware, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -331,8 +330,8 @@ router.get("/profile/:id", authMiddleware, async (req, res) => {
     res.status(500).json({
       message: "Server error",
     });
-=======
-
+  }
+  });
 // Delete Account (and related user data)
 router.delete("/account", authMiddleware, async (req, res) => {
   const userId = req.user.id;
@@ -370,7 +369,6 @@ router.delete("/account", authMiddleware, async (req, res) => {
     return res.status(500).json({ message: "Could not delete account right now." });
   } finally {
     conn.release();
->>>>>>> b324df9 (Added authentication)
   }
 });
 module.exports = router;
