@@ -11,18 +11,27 @@ import {
   X,
   LogOut,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { useConnectionStore } from "@/stores/connectionStore";
+import axios from "axios";
+
+const API = "https://connecto-2.onrender.com";
+const authHeader = () => ({
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+});
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Zustand Store se notification count lo
+  // Zustand Store se connection request count
   const { getIncomingRequests, fetchConnections } = useConnectionStore();
   const incomingCount = getIncomingRequests().length;
+
+  // Join-team / app notifications unread count
+  const [appUnreadCount, setAppUnreadCount] = useState(0);
 
   // Local states
   const [profileName, setProfileName] = useState("");
@@ -30,15 +39,36 @@ const Navbar = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const storedName = localStorage.getItem("username"); // Login ke waqt save kiya tha humne
-
+    const storedName = localStorage.getItem("username");
     if (token) {
       setIsLoggedIn(true);
       setProfileName(storedName || "User");
-      // App load hote hi connections fetch karo notifications ke liye
       fetchConnections();
     }
   }, [fetchConnections]);
+
+  // Poll unread count every 30s
+  const fetchUnread = useCallback(async () => {
+    if (!localStorage.getItem("token")) return;
+    try {
+      const res = await axios.get(`${API}/api/notifications/unread-count`, {
+        headers: authHeader(),
+      });
+      setAppUnreadCount(res.data.count || 0);
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30_000);
+    return () => clearInterval(interval);
+  }, [isLoggedIn, fetchUnread]);
+
+  // Total badge = connection requests + unread app notifications
+  const totalBadge = incomingCount + appUnreadCount;
 
   const handleLogout = () => {
     localStorage.clear();
@@ -96,19 +126,19 @@ const Navbar = () => {
             })}
           </div>
 
-          {/* 3. Right Side - Notifications, Profile & Logout */}
+          {/* 3. Right Side */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Notification Bell */}
-            <Link to="/connection-requests">
+            {/* Bell → /notifications page */}
+            <Link to="/notifications">
               <motion.button
                 className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <Bell size={20} />
-                {incomingCount > 0 && (
+                {totalBadge > 0 && (
                   <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-background">
-                    {incomingCount}
+                    {totalBadge > 99 ? "99+" : totalBadge}
                   </span>
                 )}
               </motion.button>
@@ -131,7 +161,6 @@ const Navbar = () => {
                     {profileName}
                   </span>
                 </Link>
-
                 <Button
                   variant="ghost"
                   size="icon"
@@ -150,11 +179,11 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* 4. Mobile Menu Button */}
+          {/* 4. Mobile */}
           <div className="md:hidden flex items-center space-x-4">
-            <Link to="/connection-requests" className="relative p-2">
+            <Link to="/notifications" className="relative p-2">
               <Bell size={20} className="text-muted-foreground" />
-              {incomingCount > 0 && (
+              {totalBadge > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full" />
               )}
             </Link>
@@ -168,7 +197,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* 5. Mobile Navigation Menu */}
+        {/* 5. Mobile Nav */}
         <AnimatePresence>
           {isOpen && (
             <motion.div

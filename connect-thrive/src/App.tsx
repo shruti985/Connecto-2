@@ -24,6 +24,7 @@ import MentorProfile from "./pages/startup/MentorProfile";
 import Funding from "./pages/startup/Funding";
 import IdeaHub from "./pages/startup/IdeaHub";
 import UserProfile from "./pages/UserProfile";
+import NotificationsPage from "./pages/NotificationsPage";
 
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route
             path="/profile"
             element={

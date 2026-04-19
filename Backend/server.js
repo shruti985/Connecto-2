@@ -13,6 +13,8 @@ const matchRoutes = require("./routes/matchRoutes");
 const startupRoutes = require("./routes/startupRoutes");
 const communityRoutes = require("./routes/communityRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
+const teamRoutes         = require("./routes/teamRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -42,6 +44,8 @@ app.use("/api/match", matchRoutes);
 app.use('/api/startup', startupRoutes); 
 app.use("/api/communities", communityRoutes);
 app.use("/api/hackathons", hackathonRoutes);
+app.use("/api/team",          teamRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Ab saare routes /api/startup se shuru honge, jaise: /api/startup/post-idea
 app.get("/", (req, res) => {

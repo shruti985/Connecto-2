@@ -1,25 +1,54 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
-
 const verifyToken = require("../middlewares/authmiddleware");
 const authMiddleware = require("../middlewares/authmiddleware");
-
-
 // =============================
 // POST IDEA
 // =============================
 router.post("/post-idea", verifyToken, async (req, res) => {
   try {
-    const { title, problem, solution, skills, category, stage } =
-      req.body;
+    const { title, problem, solution, skills, category, stage } = req.body;
 
     const userId = req.user.id;
+    console.log(userId)
+
+    // 🔹 Step 1 — Get username from users table
+
+    const [userRows] = await db.query(
+      `
+      SELECT username 
+      FROM users
+      WHERE id = ?
+      `,
+      [userId],
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const author = userRows[0].username;
+    console.log(userRows);
+    console.log(author)
+
+    // 🔹 Step 2 — Insert idea WITH author
 
     const sql = `
       INSERT INTO startup_ideas
-      (title, problem, solution, skills, category, stage, user_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      (
+        title,
+        problem,
+        solution,
+        skills,
+        category,
+        stage,
+        user_id,
+        author
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const [result] = await db.query(sql, [
@@ -30,15 +59,22 @@ router.post("/post-idea", verifyToken, async (req, res) => {
       category,
       stage,
       userId,
+      author,
     ]);
+
+    // 🔹 Step 3 — Send author in response
 
     res.status(201).json({
       message: "Idea saved!",
       id: result.insertId,
+      author: author,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to save idea" });
+    console.error("Post idea error:", err);
+
+    res.status(500).json({
+      error: "Failed to save idea",
+    });
   }
 });
 
@@ -70,7 +106,7 @@ router.get("/ideas", async (req, res) => {
 
       ORDER BY startup_ideas.created_at DESC
     `);
-
+      console.log(ideas);
     res.json(ideas);
   } catch (err) {
     console.error("Fetch ideas error:", err);
@@ -94,7 +130,6 @@ router.get("/idea/:id", verifyToken, async (req, res) => {
       `
       SELECT 
         startup_ideas.*,
-        users.username AS author,
 
         COUNT(DISTINCT idea_likes.id) AS likes_count,
         COUNT(DISTINCT idea_comments.id) AS comments_count
@@ -111,7 +146,6 @@ router.get("/idea/:id", verifyToken, async (req, res) => {
       ON startup_ideas.id = idea_comments.idea_id
 
       WHERE startup_ideas.id = ?
-
       GROUP BY startup_ideas.id
       `,
       [ideaId],
