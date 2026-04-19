@@ -86,25 +86,40 @@ router.get("/ideas", async (req, res) => {
 // GET SINGLE IDEA
 // =============================
 router.get("/idea/:id", verifyToken, async (req, res) => {
-
   try {
-
     const ideaId = req.params.id;
-    let userId = req.user ? req.user.id : null;
+    const userId = req.user ? req.user.id : null;
 
     const [rows] = await db.query(
       `
       SELECT 
-        startup_ideas.*
+        startup_ideas.*,
+        users.username AS author,
+
+        COUNT(DISTINCT idea_likes.id) AS likes_count,
+        COUNT(DISTINCT idea_comments.id) AS comments_count
+
       FROM startup_ideas
-      JOIN users
+
+      LEFT JOIN users
       ON startup_ideas.user_id = users.id
+
+      LEFT JOIN idea_likes
+      ON startup_ideas.id = idea_likes.idea_id
+
+      LEFT JOIN idea_comments
+      ON startup_ideas.id = idea_comments.idea_id
+
       WHERE startup_ideas.id = ?
+
+      GROUP BY startup_ideas.id
       `,
-      [ideaId]
+      [ideaId],
     );
 
     if (rows.length === 0) {
+      console.log("Idea not found for ID:", ideaId);
+
       return res.status(404).json({
         message: "Idea not found",
       });
@@ -113,34 +128,33 @@ router.get("/idea/:id", verifyToken, async (req, res) => {
     let isLiked = false;
 
     if (userId) {
-
       const [likeCheck] = await db.query(
         `
-        SELECT * FROM idea_likes
+        SELECT id FROM idea_likes
         WHERE user_id = ?
         AND idea_id = ?
         `,
-        [userId, ideaId]
+        [userId, ideaId],
       );
 
-      if (likeCheck.length > 0)
-        isLiked = true;
+      if (likeCheck.length > 0) isLiked = true;
     }
 
     const idea = rows[0];
 
     idea.skills =
-      typeof idea.skills === "string"
-        ? JSON.parse(idea.skills)
-        : idea.skills;
+      typeof idea.skills === "string" ? JSON.parse(idea.skills) : idea.skills;
 
     res.json({
       ...idea,
       isLiked,
     });
-
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Fetch idea error:", err);
+
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
