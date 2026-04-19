@@ -96,7 +96,6 @@ router.get("/idea/:id", verifyToken, async (req, res) => {
       `
       SELECT 
         startup_ideas.*,
-        users.username AS author
       FROM startup_ideas
       JOIN users
       ON startup_ideas.user_id = users.id
