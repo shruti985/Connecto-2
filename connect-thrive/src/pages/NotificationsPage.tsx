@@ -13,14 +13,17 @@ import {
   UserPlus,
   Handshake,
   MessageSquare,
-  Heart,
   FileText,
   ArrowRight,
   Loader2,
   InboxIcon,
+  X,
+  CheckCircle2,
+  MapPin,
 } from "lucide-react";
 import axios from "axios";
-import { useConnectionStore } from "@/stores/connectionStore";
+import { useConnectionStore, type Buddy } from "@/stores/connectionStore";
+import { useToast } from "@/hooks/use-toast";
 
 const API = "https://connecto-2.onrender.com";
 const authHeader = () => ({
@@ -39,59 +42,59 @@ interface AppNotif {
   sender_name: string | null;
 }
 
-interface ConnectionRequest {
-  id: number;
-  sender_id: number;
-  sender_name: string;
-  created_at?: string;
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Type config ──────────────────────────────────────────────────────────────
 const typeConfig: Record<
   string,
-  { icon: React.ReactNode; label: string; color: string; bg: string }
+  { icon: React.ReactNode; label: string; color: string; bg: string; border: string }
 > = {
   join_request: {
     icon: <Rocket className="w-4 h-4" />,
     label: "Join Request",
     color: "text-amber-400",
     bg: "bg-amber-400/10",
+    border: "border-l-amber-400/60",
   },
   request_accepted: {
     icon: <Handshake className="w-4 h-4" />,
     label: "Request Accepted",
     color: "text-green-400",
     bg: "bg-green-400/10",
+    border: "border-l-green-400/60",
   },
   request_rejected: {
-    icon: <Rocket className="w-4 h-4" />,
+    icon: <X className="w-4 h-4" />,
     label: "Request Declined",
     color: "text-red-400",
     bg: "bg-red-400/10",
+    border: "border-l-red-400/60",
   },
   connection_request: {
     icon: <UserPlus className="w-4 h-4" />,
     label: "Connection Request",
     color: "text-blue-400",
     bg: "bg-blue-400/10",
+    border: "border-l-blue-400/60",
   },
   connection_accepted: {
     icon: <Handshake className="w-4 h-4" />,
     label: "Connection Accepted",
     color: "text-primary",
     bg: "bg-primary/10",
+    border: "border-l-primary/60",
   },
   new_post: {
     icon: <FileText className="w-4 h-4" />,
     label: "New Post",
     color: "text-purple-400",
     bg: "bg-purple-400/10",
+    border: "border-l-purple-400/60",
   },
   new_comment: {
     icon: <MessageSquare className="w-4 h-4" />,
     label: "New Comment",
     color: "text-sky-400",
     bg: "bg-sky-400/10",
+    border: "border-l-sky-400/60",
   },
 };
 
@@ -100,6 +103,7 @@ const fallbackConfig = {
   label: "Notification",
   color: "text-muted-foreground",
   bg: "bg-muted/40",
+  border: "border-l-border/40",
 };
 
 function timeAgo(dateStr: string) {
@@ -115,100 +119,140 @@ function timeAgo(dateStr: string) {
 }
 
 // ─── Connection Request Card ──────────────────────────────────────────────────
+// Uses respondToRequest(buddyId, action) — exactly what the store exposes
 const ConnectionCard = ({
-  req,
+  buddy,
   onAction,
 }: {
-  req: ConnectionRequest;
+  buddy: Buddy;
   onAction: () => void;
 }) => {
   const navigate = useNavigate();
-  const { acceptConnection, rejectConnection } = useConnectionStore();
+  const { toast } = useToast();
+  const { respondToRequest } = useConnectionStore();
   const [loading, setLoading] = useState<"accept" | "reject" | null>(null);
-  const cfg = typeConfig["connection_request"];
 
   const handle = async (type: "accept" | "reject") => {
     setLoading(type);
-    try {
-      if (type === "accept") await acceptConnection(req.id);
-      else await rejectConnection(req.id);
-      onAction();
-    } finally {
-      setLoading(null);
+    const action = type === "accept" ? "accepted" : "rejected";
+    // respondToRequest takes (buddyId: number, action) — store handles the API call
+    const success = await respondToRequest(buddy.id, action);
+    setLoading(null);
+    if (success) {
+      toast({
+        title: type === "accept" ? "Connected! 🎉" : "Request removed",
+        description:
+          type === "accept"
+            ? `You are now connected with ${buddy.name}`
+            : `Request from ${buddy.name} removed`,
+      });
+      onAction(); // re-fetch connections to update the list
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: "Please try again.",
+      });
     }
   };
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="glass-card p-4 border-l-2 border-blue-400/60"
+      className="glass-card p-5 border-l-2 border-l-blue-400/60 hover:border-l-blue-400 transition-all"
     >
-      <div className="flex items-start gap-3">
-        {/* Icon */}
-        <div className={`p-2 rounded-lg ${cfg.bg} ${cfg.color} flex-shrink-0`}>
-          {cfg.icon}
+      <div className="flex items-center gap-4">
+        {/* Avatar */}
+        <div className="relative flex-shrink-0">
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-base font-bold text-primary-foreground">
+            {buddy.avatar || buddy.name?.[0] || "?"}
+          </div>
+          {buddy.online && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+          )}
         </div>
 
-        {/* Content */}
+        {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <p className="font-semibold text-sm">{buddy.name}</p>
             <Badge
               variant="outline"
-              className={`text-[10px] h-5 ${cfg.color} border-current/30`}
+              className="text-[10px] h-4 text-blue-400 border-blue-400/30"
             >
-              {cfg.label}
+              Connection Request
             </Badge>
           </div>
-          <p className="text-sm font-medium text-foreground">
-            <span className="text-primary">{req.sender_name}</span> sent you a
-            connection request
+          <p className="text-xs text-muted-foreground">
+            {buddy.course} · {buddy.year}
           </p>
-          {req.created_at && (
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {timeAgo(req.created_at)}
+          {buddy.hometown && (
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              {buddy.hometown}
             </p>
           )}
+          {buddy.interests?.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {buddy.interests.slice(0, 3).map((interest) => (
+                <span
+                  key={interest}
+                  className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary"
+                >
+                  {interest}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 mt-3">
-            <Button
-              size="sm"
-              className="h-7 text-xs bg-primary hover:bg-primary/90"
-              onClick={() => handle("accept")}
-              disabled={!!loading}
-            >
-              {loading === "accept" ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                "Accept"
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs border-border/60"
-              onClick={() => handle("reject")}
-              disabled={!!loading}
-            >
-              {loading === "reject" ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                "Decline"
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs text-muted-foreground ml-auto"
-              onClick={() => navigate("/connection-requests")}
-            >
-              View all <ArrowRight className="w-3 h-3 ml-1" />
-            </Button>
-          </div>
+        {/* Action buttons */}
+        <div className="flex flex-col gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            className="h-8 text-xs btn-glow"
+            onClick={() => handle("accept")}
+            disabled={!!loading}
+          >
+            {loading === "accept" ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <>
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                Accept
+              </>
+            )}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs border-destructive/40 text-destructive hover:bg-destructive/10"
+            onClick={() => handle("reject")}
+            disabled={!!loading}
+          >
+            {loading === "reject" ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <>
+                <X className="w-3 h-3 mr-1" />
+                Decline
+              </>
+            )}
+          </Button>
         </div>
       </div>
+
+      {/* Footer link */}
+      <button
+        onClick={() => navigate("/connection-requests")}
+        className="mt-3 pt-3 border-t border-border/30 w-full text-left text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
+      >
+        View all connection requests
+        <ArrowRight className="w-3 h-3" />
+      </button>
     </motion.div>
   );
 };
@@ -225,14 +269,20 @@ const NotifCard = ({
   const cfg = typeConfig[notif.type] ?? fallbackConfig;
   const isUnread = !notif.is_read;
 
+  const isClickable = !!(
+    notif.idea_id ||
+    notif.type === "connection_request" ||
+    notif.type === "connection_accepted"
+  );
+
   const handleClick = () => {
+    if (!isClickable) return;
     if (isUnread) onMarkRead(notif.id);
-    if (notif.idea_id) navigate(`/startup/idea/${notif.idea_id}`);
-    else if (
-      notif.type === "connection_request" ||
-      notif.type === "connection_accepted"
-    )
+    if (notif.idea_id) {
+      navigate(`/startup/idea/${notif.idea_id}`);
+    } else {
       navigate("/connection-requests");
+    }
   };
 
   return (
@@ -242,27 +292,27 @@ const NotifCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
       onClick={handleClick}
-      className={`glass-card p-4 cursor-pointer transition-all hover:scale-[1.01] border-l-2 ${
-        isUnread ? "border-primary/70" : "border-border/30"
-      }`}
+      className={`glass-card p-4 border-l-2 transition-all ${cfg.border} ${
+        isUnread ? "bg-primary/[0.02]" : ""
+      } ${isClickable ? "cursor-pointer hover:scale-[1.005]" : ""}`}
     >
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className={`p-2 rounded-lg ${cfg.bg} ${cfg.color} flex-shrink-0`}>
+        <div className={`p-2 rounded-lg ${cfg.bg} ${cfg.color} flex-shrink-0 mt-0.5`}>
           {cfg.icon}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <Badge
               variant="outline"
-              className={`text-[10px] h-5 ${cfg.color} border-current/30`}
+              className={`text-[10px] h-4 px-1.5 ${cfg.color} border-current/25 flex-shrink-0`}
             >
               {cfg.label}
             </Badge>
             {isUnread && (
-              <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
             )}
           </div>
           <p
@@ -272,14 +322,13 @@ const NotifCard = ({
           >
             {notif.message}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground/70 mt-1">
             {timeAgo(notif.created_at)}
           </p>
         </div>
 
-        {/* Arrow hint if clickable */}
-        {(notif.idea_id || notif.type.includes("connection")) && (
-          <ArrowRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0 mt-1" />
+        {isClickable && (
+          <ArrowRight className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-1" />
         )}
       </div>
     </motion.div>
@@ -289,17 +338,24 @@ const NotifCard = ({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const NotificationsPage = () => {
   const navigate = useNavigate();
-  const { getIncomingRequests, fetchConnections } = useConnectionStore();
+
+  // getIncomingRequests() → number[] (list of buddy IDs who sent requests)
+  const { buddies, fetchBuddies, fetchConnections, getIncomingRequests } =
+    useConnectionStore();
 
   const [appNotifs, setAppNotifs] = useState<AppNotif[]>([]);
   const [loading, setLoading] = useState(true);
   const [markingAll, setMarkingAll] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "unread">("all");
 
-  const connectionRequests = getIncomingRequests();
+  // Map buddy IDs → full Buddy objects for the ConnectionCard
+  const incomingIds = getIncomingRequests(); // number[]
+  const connectionBuddies: Buddy[] = buddies.filter((b) =>
+    incomingIds.includes(b.id)
+  );
 
   // ── fetch ───────────────────────────────────────────────────────────────
-  const fetchAll = useCallback(async () => {
+  const fetchAppNotifs = useCallback(async () => {
     try {
       const res = await axios.get(`${API}/api/notifications`, {
         headers: authHeader(),
@@ -313,14 +369,14 @@ const NotificationsPage = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!localStorage.getItem("token")) {
       navigate("/login");
       return;
     }
-    fetchAll();
+    fetchAppNotifs();
+    fetchBuddies();
     fetchConnections();
-  }, [fetchAll, fetchConnections, navigate]);
+  }, [fetchAppNotifs, fetchBuddies, fetchConnections, navigate]);
 
   // ── mark single read ────────────────────────────────────────────────────
   const markRead = useCallback(async (id: number) => {
@@ -328,10 +384,10 @@ const NotificationsPage = () => {
       await axios.patch(
         `${API}/api/notifications/${id}/read`,
         {},
-        { headers: authHeader() },
+        { headers: authHeader() }
       );
       setAppNotifs((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: 1 } : n)),
+        prev.map((n) => (n.id === id ? { ...n, is_read: 1 } : n))
       );
     } catch {
       /* silent */
@@ -342,32 +398,34 @@ const NotificationsPage = () => {
   const markAllRead = async () => {
     setMarkingAll(true);
     try {
-      await axios.patch(
-        `${API}/api/notifications/read-all`,
-        {},
-        { headers: authHeader() },
-      );
+      await axios.patch(`${API}/api/notifications/read-all`, {}, {
+        headers: authHeader(),
+      });
       setAppNotifs((prev) => prev.map((n) => ({ ...n, is_read: 1 })));
     } finally {
       setMarkingAll(false);
     }
   };
 
-  // ── filter ──────────────────────────────────────────────────────────────
-  const displayed =
-    activeTab === "unread" ? appNotifs.filter((n) => !n.is_read) : appNotifs;
-
+  // ── derived ─────────────────────────────────────────────────────────────
   const unreadCount = appNotifs.filter((n) => !n.is_read).length;
-  const totalCount = connectionRequests.length + appNotifs.length;
+  const totalCount = connectionBuddies.length + appNotifs.length;
+  const displayedNotifs =
+    activeTab === "unread" ? appNotifs.filter((n) => !n.is_read) : appNotifs;
+  const isEmpty =
+    activeTab === "all"
+      ? totalCount === 0
+      : unreadCount === 0 && connectionBuddies.length === 0;
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-2xl">
+
           {/* ── Header ──────────────────────────────────────────────────── */}
           <motion.div
-            initial={{ opacity: 0, y: -16 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
@@ -433,20 +491,19 @@ const NotificationsPage = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="w-7 h-7 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">
-                Loading notifications...
-              </p>
+              <p className="text-sm text-muted-foreground">Loading...</p>
             </div>
           ) : (
             <div className="space-y-8">
-              {/* ── Connection Requests Section ────────────────────────── */}
-              {connectionRequests.length > 0 && activeTab === "all" && (
+
+              {/* ── Connection Requests — only in "all" tab ──────────────── */}
+              {connectionBuddies.length > 0 && activeTab === "all" && (
                 <section>
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       Connection Requests
-                      <span className="ml-2 inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-400/20 text-blue-400 text-[9px] font-bold">
-                        {connectionRequests.length}
+                      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-400/20 text-blue-400 text-[9px] font-bold">
+                        {connectionBuddies.length}
                       </span>
                     </h2>
                     <button
@@ -456,38 +513,39 @@ const NotificationsPage = () => {
                       View all <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
+
                   <AnimatePresence mode="popLayout">
                     <div className="space-y-3">
-                      {connectionRequests.slice(0, 3).map((req: any) => (
+                      {connectionBuddies.slice(0, 3).map((buddy) => (
                         <ConnectionCard
-                          key={req.id}
-                          req={req}
+                          key={buddy.id}
+                          buddy={buddy}
                           onAction={fetchConnections}
                         />
                       ))}
                     </div>
                   </AnimatePresence>
-                  {connectionRequests.length > 3 && (
+
+                  {connectionBuddies.length > 3 && (
                     <button
                       onClick={() => navigate("/connection-requests")}
-                      className="mt-3 w-full py-2 text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/50 rounded-lg transition-colors"
+                      className="mt-3 w-full py-2.5 text-xs text-muted-foreground hover:text-foreground border border-dashed border-border/50 rounded-lg transition-colors"
                     >
-                      +{connectionRequests.length - 3} more connection request
-                      {connectionRequests.length - 3 !== 1 ? "s" : ""}
+                      +{connectionBuddies.length - 3} more — View all requests
                     </button>
                   )}
                 </section>
               )}
 
-              {/* ── App Notifications Section ──────────────────────────── */}
-              {displayed.length > 0 && (
+              {/* ── App Notifications ─────────────────────────────────────── */}
+              {displayedNotifs.length > 0 && (
                 <section>
                   <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
                     {activeTab === "unread" ? "Unread" : "Recent Activity"}
                   </h2>
                   <AnimatePresence mode="popLayout">
                     <div className="space-y-3">
-                      {displayed.map((n) => (
+                      {displayedNotifs.map((n) => (
                         <NotifCard key={n.id} notif={n} onMarkRead={markRead} />
                       ))}
                     </div>
@@ -495,18 +553,15 @@ const NotificationsPage = () => {
                 </section>
               )}
 
-              {/* ── Empty state ────────────────────────────────────────── */}
-              {totalCount === 0 ||
-              (activeTab === "unread" &&
-                unreadCount === 0 &&
-                connectionRequests.length === 0) ? (
+              {/* ── Empty State ───────────────────────────────────────────── */}
+              {isEmpty && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="flex flex-col items-center justify-center py-20 gap-4 text-center"
                 >
                   <div className="p-5 rounded-2xl bg-muted/30">
-                    <InboxIcon className="w-10 h-10 text-muted-foreground/40" />
+                    <InboxIcon className="w-10 h-10 text-muted-foreground/30" />
                   </div>
                   <div>
                     <p className="font-medium text-muted-foreground">
@@ -521,7 +576,8 @@ const NotificationsPage = () => {
                     </p>
                   </div>
                 </motion.div>
-              ) : null}
+              )}
+
             </div>
           )}
         </div>
