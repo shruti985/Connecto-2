@@ -95,7 +95,7 @@ router.get("/idea/:id", verifyToken, async (req, res) => {
     const [rows] = await db.query(
       `
       SELECT 
-        startup_ideas.*,
+        startup_ideas.*
       FROM startup_ideas
       JOIN users
       ON startup_ideas.user_id = users.id
