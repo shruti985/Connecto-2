@@ -27,6 +27,7 @@ const categories = [
   "CleanTech",
   "FinTech",
   "HealthTech",
+  "Other",
 ];
 const stages = ["All", "Idea", "MVP", "Prototype", "Launched"];
 
@@ -54,7 +55,8 @@ const IdeaHub = () => {
             ? JSON.parse(idea.skills)
             : idea.skills,
         authorAvatar: idea.author ? idea.author[0].toUpperCase() : "U", // Avatar logic
-        likes: idea.likes || 0,
+        author: idea.author || "Unknown",
+        likes: idea.likes_count || 0,
         comments: idea.comments || [],
         members: idea.members || [],
       }));

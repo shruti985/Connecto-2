@@ -54,7 +54,6 @@ router.post("/onboarding", authMiddleware, async (req, res) => {
 
     // Always mark onboarding as done
     sets.push("onboarding_done = 1");
-
     // If absolutely nothing was filled in (user skipped everything),
     // still mark onboarding done but don't touch any data columns.
     if (sets.length === 1) {
@@ -333,7 +332,7 @@ router.get("/profile/:id", authMiddleware, async (req, res) => {
   }
   });
 // Delete Account (and related user data)
-router.delete("/account", authMiddleware, async (req, res) => {
+router.delete("/delete", authMiddleware, async (req, res) => {
   const userId = req.user.id;
   const conn = await db.getConnection();
   try {

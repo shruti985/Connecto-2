@@ -1,21 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../config/db"); // Aapka promise-based pool
-const verifyToken=require("../middlewares/authmiddleware.js");
+const db = require("../config/db");
+
+const verifyToken = require("../middlewares/authmiddleware");
 const authMiddleware = require("../middlewares/authmiddleware");
-// 1. Post Idea Route
+
+
+// =============================
+// POST IDEA
+// =============================
 router.post("/post-idea", verifyToken, async (req, res) => {
   try {
-    const { title, problem, solution, skills, category, stage } = req.body;
-    
-    // Ab 'author' frontend se lene ki zarurat nahi hai, 
-    // wo verifyToken se 'req.user.id' mein mil jayega.
-    const userId = req.user.id; 
+    const { title, problem, solution, skills, category, stage } =
+      req.body;
 
-    // SQL query mein 'author' ki jagah 'user_id' use hoga
+    const userId = req.user.id;
+
     const sql = `
-      INSERT INTO startup_ideas 
-      (title, problem, solution, skills, category, stage, user_id) 
+      INSERT INTO startup_ideas
+      (title, problem, solution, skills, category, stage, user_id)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
@@ -23,98 +26,286 @@ router.post("/post-idea", verifyToken, async (req, res) => {
       title,
       problem,
       solution,
-      JSON.stringify(skills), // Skills ko stringify karke store karna sahi hai
+      JSON.stringify(skills),
       category,
       stage,
       userId,
     ]);
 
-    res.status(201).json({ 
-      message: "Idea saved!", 
-      id: result.insertId 
+    res.status(201).json({
+      message: "Idea saved!",
+      id: result.insertId,
     });
   } catch (err) {
-    console.error("Error in post-idea:", err);
+    console.error(err);
     res.status(500).json({ error: "Failed to save idea" });
   }
 });
 
-// 2. Get Ideas Route
+
+// =============================
+// GET ALL IDEAS
+// =============================
 router.get("/ideas", async (req, res) => {
   try {
-    const sql = "SELECT * FROM startup_ideas ORDER BY created_at DESC";
+    const [ideas] = await db.query(`
+      SELECT 
+        startup_ideas.*,
 
-    // Promise-based query
-    const [results] = await db.query(sql);
+        COUNT(DISTINCT idea_likes.id) AS likes_count,
+        COUNT(DISTINCT idea_comments.id) AS comments_count
 
-    res.json(results);
+      FROM startup_ideas
+
+      LEFT JOIN users 
+      ON startup_ideas.user_id = users.id
+
+      LEFT JOIN idea_likes 
+      ON startup_ideas.id = idea_likes.idea_id
+
+      LEFT JOIN idea_comments 
+      ON startup_ideas.id = idea_comments.idea_id
+
+      GROUP BY startup_ideas.id
+
+      ORDER BY startup_ideas.created_at DESC
+    `);
+
+    res.json(ideas);
   } catch (err) {
-    console.error("Error in get-ideas:", err);
+    console.error("Fetch ideas error:", err);
+
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+});
+
+
+// =============================
+// GET SINGLE IDEA
+// =============================
+router.get("/idea/:id", verifyToken, async (req, res) => {
+
+  try {
+
+    const ideaId = req.params.id;
+    let userId = req.user ? req.user.id : null;
+
+    const [rows] = await db.query(
+      `
+      SELECT 
+        startup_ideas.*,
+        users.username AS author
+      FROM startup_ideas
+      JOIN users
+      ON startup_ideas.user_id = users.id
+      WHERE startup_ideas.id = ?
+      `,
+      [ideaId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Idea not found",
+      });
+    }
+
+    let isLiked = false;
+
+    if (userId) {
+
+      const [likeCheck] = await db.query(
+        `
+        SELECT * FROM idea_likes
+        WHERE user_id = ?
+        AND idea_id = ?
+        `,
+        [userId, ideaId]
+      );
+
+      if (likeCheck.length > 0)
+        isLiked = true;
+    }
+
+    const idea = rows[0];
+
+    idea.skills =
+      typeof idea.skills === "string"
+        ? JSON.parse(idea.skills)
+        : idea.skills;
+
+    res.json({
+      ...idea,
+      isLiked,
+    });
+
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-module.exports = router;
-// Get single idea by ID
-// Get single idea by ID
-// Note: verifyToken ko use karein, lekin isme error handling aisi ho ki 
-// agar token na bhi ho toh idea dikh jaye (lekin isLiked false rahe)
-router.get('/idea/:id', verifyToken,async (req, res) => {
-    try {
-        // Token check karne ke liye manually handle kar sakte hain ya 
-        // ek optionalAuth middleware bana sakte hain. 
-        // Filhaal hum manually token extract kar lete hain headers se:
-        const authHeader = req.headers.authorization;
-        let userId = req.user ? req.user.id : null; // Agar verifyToken ne set kiya hai toh use karo
 
+// =============================
+// LIKE IDEA
+// =============================
+router.post(
+  "/idea/:id/like",
+  authMiddleware,
+  async (req, res) => {
 
-        const [rows] = await db.query("SELECT * FROM startup_ideas WHERE id = ?", [req.params.id]);
-        const ideaId = req.params.id;
-
-        if (rows.length === 0) {
-            return res.status(404).json({ message: "Idea not found" });
-        }
-
-        let isLiked = false;
-        const idea = rows[0];
-        
-        // Check if liked only if userId exists
-        if (userId) {
-            const [likeCheck] = await db.query(
-                "SELECT * FROM idea_likes WHERE user_id = ? AND idea_id = ?",
-                [userId, ideaId]
-            );
-            if (likeCheck.length > 0) isLiked = true;
-        }
-
-        idea.skills = typeof idea.skills === 'string' ? JSON.parse(idea.skills) : idea.skills;
-        
-        res.json({ ...idea, isLiked });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-// api/startup/idea/:id/like
-router.post('/idea/:id/like',authMiddleware, async (req, res) => {
     const ideaId = req.params.id;
-    const userId = req.user.id; 
+    const userId = req.user.id;
 
     try {
-        // Check karo kya pehle se like exists karta hai
-        const [existing] = await db.query('SELECT * FROM idea_likes WHERE user_id = ? AND idea_id = ?', [userId, ideaId]);
 
-        if (existing.length > 0) {
-            // Un-like: Delete record and decrement count
-            await db.query('DELETE FROM idea_likes WHERE user_id = ? AND idea_id = ?', [userId, ideaId]);
-            await db.query('UPDATE startup_ideas SET likes_count = likes_count - 1 WHERE id = ?', [ideaId]);
-            return res.json({ liked: false });
-        } else {
-            // Like: Insert record and increment count
-            await db.query('INSERT INTO idea_likes (user_id, idea_id) VALUES (?, ?)', [userId, ideaId]);
-            await db.query('UPDATE startup_ideas SET likes_count = likes_count + 1 WHERE id = ?', [ideaId]);
-            return res.json({ liked: true });
-        }
+      const [existing] = await db.query(
+        `
+        SELECT * FROM idea_likes
+        WHERE user_id = ?
+        AND idea_id = ?
+        `,
+        [userId, ideaId]
+      );
+
+      if (existing.length > 0) {
+
+        await db.query(
+          `
+          DELETE FROM idea_likes
+          WHERE user_id = ?
+          AND idea_id = ?
+          `,
+          [userId, ideaId]
+        );
+
+        await db.query(
+          `
+          UPDATE startup_ideas
+          SET likes_count = likes_count - 1
+          WHERE id = ?
+          `,
+          [ideaId]
+        );
+
+        return res.json({
+          liked: false,
+        });
+
+      } else {
+
+        await db.query(
+          `
+          INSERT INTO idea_likes
+          (user_id, idea_id)
+          VALUES (?, ?)
+          `,
+          [userId, ideaId]
+        );
+
+        await db.query(
+          `
+          UPDATE startup_ideas
+          SET likes_count = likes_count + 1
+          WHERE id = ?
+          `,
+          [ideaId]
+        );
+
+        return res.json({
+          liked: true,
+        });
+      }
+
     } catch (err) {
-        res.status(500).json({ error: err.message });
+      res.status(500).json({ error: err.message });
     }
-});
+  }
+);
+
+
+// =============================
+// ADD COMMENT
+// =============================
+router.post(
+  "/idea/:id/comment",
+  authMiddleware,
+  async (req, res) => {
+
+    const ideaId = req.params.id;
+    const userId = req.user.id;
+    const { comment } = req.body;
+
+    try {
+
+      if (!comment || comment.trim() === "") {
+        return res.status(400).json({
+          message: "Comment required",
+        });
+      }
+
+      await db.query(
+        `
+        INSERT INTO idea_comments
+        (idea_id, user_id, comment)
+        VALUES (?, ?, ?)
+        `,
+        [ideaId, userId, comment]
+      );
+
+      await db.query(
+        `
+        UPDATE startup_ideas
+        SET comments_count = comments_count + 1
+        WHERE id = ?
+        `,
+        [ideaId]
+      );
+
+      res.json({
+        message: "Comment added",
+      });
+
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+
+// =============================
+// GET COMMENTS
+// =============================
+router.get(
+  "/idea/:id/comments",
+  async (req, res) => {
+
+    const ideaId = req.params.id;
+
+    try {
+
+      const [comments] = await db.query(
+        `
+        SELECT
+          idea_comments.id,
+          idea_comments.comment,
+          idea_comments.created_at,
+          users.username AS user
+        FROM idea_comments
+        JOIN users
+        ON idea_comments.user_id = users.id
+        WHERE idea_comments.idea_id = ?
+        ORDER BY created_at DESC
+        `,
+        [ideaId]
+      );
+
+      res.json(comments);
+
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+module.exports = router;

@@ -28,11 +28,12 @@ const IdeaDetail = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [idea, setIdea] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [comment, setComment] = useState("");
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinSkills, setJoinSkills] = useState("");
   const [joinMessage, setJoinMessage] = useState("");
   const token = localStorage.getItem("token");
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
   // Fetch Idea Details from Backend
   useEffect(() => {
     const fetchIdea = async () => {
@@ -81,7 +82,20 @@ const IdeaDetail = () => {
 
     if (id) fetchIdea();
   }, [id, toast]);
+  const fetchComments = async () => {
+    try {
+      const res = await axios.get(
+        `https://connecto-2.onrender.com/api/startup/idea/${id}/comments`,
+      );
 
+      setComments(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  useEffect(() => {
+    if (id) fetchComments();
+  }, [id]);
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -144,11 +158,31 @@ const IdeaDetail = () => {
     );
   }
 
-  const handleComment = () => {
+  const handleComment = async () => {
     if (!comment.trim()) return;
-    // Currently using local store - backend connection point
-    ideaStore.addComment(idea.id, comment);
-    setComment("");
+
+    try {
+      await axios.post(
+        `https://connecto-2.onrender.com/api/startup/idea/${id}/comment`,
+        { comment },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setComment("");
+
+      fetchComments();
+
+      setIdea((prev: any) => ({
+        ...prev,
+        comments_count: (prev.comments_count || 0) + 1,
+      }));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleJoinRequest = () => {
@@ -249,7 +283,7 @@ const IdeaDetail = () => {
                 {idea.likes} Likes
               </button>
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <MessageCircle className="w-5 h-5" /> {idea.comments.length}{" "}
+                <MessageCircle className="w-5 h-5" /> {idea.comments_count}{" "}
                 Comments
               </span>
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -340,28 +374,26 @@ const IdeaDetail = () => {
               </div>
 
               <div className="space-y-4">
-                {idea.comments.map((c: any) => (
-                  <motion.div
-                    key={c.id}
-                    className="glass-card p-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
+                {comments.map((c: any) => (
+                  <motion.div key={c.id} className="glass-card p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
-                        {c.avatar || "U"}
+                        {c.user[0]}
                       </div>
+
                       <p className="font-medium text-sm">{c.user}</p>
+
                       <span className="text-xs text-muted-foreground ml-auto">
-                        {c.time}
+                        {new Date(c.created_at).toLocaleString()}
                       </span>
                     </div>
+
                     <p className="text-sm text-muted-foreground ml-10">
-                      {c.content}
+                      {c.comment}
                     </p>
                   </motion.div>
                 ))}
-                {idea.comments.length === 0 && (
+                {idea.comments_count === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-10 glass-card">
                     No comments yet. Start the conversation!
                   </p>

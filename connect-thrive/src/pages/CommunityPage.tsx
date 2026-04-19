@@ -12,6 +12,8 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { socket } from "@/socket"; // Bas ye kafi hai
 import HackathonTab from "../components/hackathon/Hackathontab"
+import EmojiPicker from "emoji-picker-react";
+import { Smile } from "lucide-react";
 
 import {
   Send,
@@ -292,8 +294,6 @@ const [membersCount, setMembersCount] = useState(0);
     content: string;
     created_at: string;
   }
-
-  // State hooks (Aapke code mein already hain, bas type update)
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
 
   // CHECK IF USER JOINED THIS COMMUNITY
@@ -425,14 +425,27 @@ const handleToggleJoin = async () => {
     fetchJoinStatus();
     fetchMembersCount();  
   }, [id]);
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest", // Ye page ko upar-niche hone se rokega
-      });
-    }
-  }, [chatMessages]); // Jab bhi messages array update hoga, ye chalega
+const isFirstLoad = useRef(true);
+
+useEffect(() => {
+  if (!scrollRef.current) return;
+
+  if (isFirstLoad.current) {
+    // Chat open → direct bottom (no animation)
+    scrollRef.current.scrollIntoView({
+      behavior: "auto",
+      block: "end",
+    });
+
+    isFirstLoad.current = false;
+  } else {
+    // New message → smooth scroll
+    scrollRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }
+}, [chatMessages]);
   // useEffect ke andar socket listeners add karein
   // 1. Mark as Read Function
   const markAsRead = () => {
@@ -602,6 +615,8 @@ const handleToggleJoin = async () => {
  }, [slug]);
   const ChatInput = ({ onSend }: { onSend: (msg: string) => void }) => {
     const [text, setText] = useState("");
+    const [showEmoji, setShowEmoji] = useState(false);
+    const emojiRef = useRef<HTMLDivElement>(null);
 
     const handleSend = () => {
       if (text.trim()) {
@@ -610,8 +625,48 @@ const handleToggleJoin = async () => {
       }
     };
 
+    // Emoji select hone par text me add
+    const onEmojiClick = (emojiData: any) => {
+      setText((prev) => prev + emojiData.emoji);
+    };
+
+    // Click outside → emoji close
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (
+          emojiRef.current &&
+          !emojiRef.current.contains(event.target as Node)
+        ) {
+          setShowEmoji(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, []);
+
     return (
-      <div className="p-4 bg-background/50 border-t border-white/10 flex gap-2">
+      <div className="p-4 bg-background/50 border-t border-white/10 flex gap-2 relative">
+        {/* Emoji Button */}
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => setShowEmoji(!showEmoji)}
+        >
+          <Smile className="w-5 h-5" />
+        </Button>
+
+        {/* Emoji Picker */}
+        {showEmoji && (
+          <div ref={emojiRef} className="absolute bottom-16 left-2 z-50">
+            <EmojiPicker onEmojiClick={onEmojiClick} />
+          </div>
+        )}
+
+        {/* Input */}
         <Input
           placeholder="Type your message..."
           value={text}
@@ -619,6 +674,8 @@ const handleToggleJoin = async () => {
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           className="bg-black/20"
         />
+
+        {/* Send Button */}
         <Button onClick={handleSend} className="btn-glow">
           <Send className="w-4 h-4" />
         </Button>
