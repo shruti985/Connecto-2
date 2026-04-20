@@ -30,8 +30,8 @@ import FindMatchButton from "../components/FindMatch/FindMatchButton";
 
 const API_BASE =
   window.location.hostname === "localhost"
-    ? "https://connecto-2.onrender.com/api"
-    : "https://connecto-2.onrender.com/api";
+    ? "https://connecto-2.vercel.appapi"
+    : "https://connecto-2.vercel.appapi";
 const API = `${API_BASE}/users`;
 
 const COMMUNITY_DISPLAY: Record<
@@ -163,7 +163,7 @@ function Profile() {
 
     // 2. Communities
     axios.get(
-      `https://connecto-2.onrender.com/api/communities/my-communities/details`,
+      `https://connecto-2.vercel.appapi/communities/my-communities/details`,
       { headers },
     );
     axios
@@ -665,15 +665,7 @@ function Profile() {
                     className="w-full justify-start"
                     onClick={() => navigate("/messages")}
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" /> Messages
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => navigate("/")}
-                  >
-                    <User className="w-4 h-4 mr-2" /> My Posts
+                    <MessageCircle className="w-4 h-4 mr-2 mb-1" /> Messages
                   </Button>
 
                   {/* Logout */}
@@ -682,7 +674,7 @@ function Profile() {
                     className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={handleLogout}
                   >
-                    <LogOut className="w-4 h-4 mr-2" /> Logout
+                    <LogOut className="w-4 h-4 mr-2 mb-1" /> Logout
                   </Button>
 
                   {/* 🔥 Delete Account */}
