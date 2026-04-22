@@ -10,11 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
-import { socket } from "@/socket"; // Bas ye kafi hai
-import HackathonTab from "../components/hackathon/Hackathontab"
+import { socket } from "@/socket";
+import HackathonTab from "../components/hackathon/Hackathontab";
+import TravelResources from "@/pages/TravelResources"; // ✅ From File 1
 import EmojiPicker from "emoji-picker-react";
 import { Smile } from "lucide-react";
-
 import {
   Send,
   Heart,
@@ -34,7 +34,6 @@ import {
   Plane,
   Code,
   Rocket,
-  Link,
 } from "lucide-react";
 
 // --- Types ---
@@ -48,10 +47,11 @@ interface Post {
   created_at: string;
   user_id: number;
 }
+
 interface Community {
   name: string;
   description: string;
-  icon: React.ElementType; // Lucide icons ke liye ye zaroori hai
+  icon: React.ElementType;
   gradient: string;
   color: string;
   members: number;
@@ -59,7 +59,7 @@ interface Community {
     title: string;
     icon: React.ElementType;
     description: string;
-     link?: string;
+    link?: string;
   }[];
 }
 
@@ -67,37 +67,28 @@ interface Community {
 const communityData: Record<string, Community> = {
   travel: {
     name: "Travel & Explore",
-
     description:
       "Discover nearby campus places, cafes, weekend getaways, and find travel buddies.",
-
     icon: Plane,
-
     gradient: "bg-gradient-to-br from-cyan-500 to-blue-600",
-
     color: "text-travel",
-
     members: 234,
-
     resources: [
       {
         title: "Nearby Cafes",
         icon: Coffee,
         description: "Best cafes near campus for study sessions",
       },
-
       {
         title: "Weekend Getaways",
         icon: Mountain,
         description: "Popular spots within 100km",
       },
-
       {
         title: "Food Spots",
         icon: Utensils,
         description: "Must-try restaurants and street food",
       },
-
       {
         title: "Campus Places",
         icon: MapPin,
@@ -108,37 +99,28 @@ const communityData: Record<string, Community> = {
 
   dsa: {
     name: "DSA & Coding",
-
     description:
       "Master Data Structures & Algorithms together. Share resources and crack placements!",
-
     icon: Code,
-
     gradient: "bg-gradient-to-br from-purple-500 to-pink-600",
-
     color: "text-dsa",
-
     members: 456,
-
     resources: [
       {
         title: "LeetCode Roadmap",
         icon: Target,
         description: "Curated problem sets by topic",
       },
-
       {
         title: "Interview Prep",
         icon: BookOpen,
         description: "Company-wise question banks",
       },
-
       {
         title: "Study Resources",
         icon: BookOpen,
         description: "Best tutorials and courses",
       },
-
       {
         title: "Contest Calendar",
         icon: Target,
@@ -149,37 +131,28 @@ const communityData: Record<string, Community> = {
 
   "mental-wellness": {
     name: "Mental Wellness",
-
     description:
       "Your safe space for mental health. Join meditation sessions and support each other.",
-
     icon: Brain,
-
     gradient: "bg-gradient-to-br from-green-500 to-emerald-600",
-
     color: "text-wellness",
-
     members: 189,
-
     resources: [
       {
         title: "Guided Meditation",
         icon: Brain,
         description: "Daily meditation sessions",
       },
-
       {
         title: "Wellness Articles",
         icon: BookOpen,
         description: "Mental health resources",
       },
-
       {
         title: "Support Circle",
         icon: Users,
         description: "Peer support groups",
       },
-
       {
         title: "Self-Care Tips",
         icon: Heart,
@@ -190,59 +163,64 @@ const communityData: Record<string, Community> = {
 
   startup: {
     name: "Startup Hub",
-
     description:
       "Connect with aspiring entrepreneurs, share ideas, and find co-founders.",
-
     icon: Rocket,
-
     gradient: "bg-gradient-to-br from-orange-500 to-amber-600",
-
     color: "text-startup",
-
     members: 312,
-
     resources: [
-      { title: "Idea Hub", icon: Lightbulb, description: "Post ideas, find collaborators & get feedback", link: "/startup/ideas" },
-      { title: "Mentor Connect", icon: Users, description: "Book sessions with alumni mentors", link: "/startup/mentors" },
-      { title: "Funding & Opportunities", icon: Target, description: "Grants, competitions & incubation programs", link: "/startup/funding" },
-      { title: "Post Your Idea", icon: BookOpen, description: "Share your startup idea with the community", link: "/startup/post-idea" },
+      {
+        title: "Idea Hub",
+        icon: Lightbulb,
+        description: "Post ideas, find collaborators & get feedback",
+        link: "/startup/ideas",
+      },
+      {
+        title: "Mentor Connect",
+        icon: Users,
+        description: "Book sessions with alumni mentors",
+        link: "/startup/mentors",
+      },
+      {
+        title: "Funding & Opportunities",
+        icon: Target,
+        description: "Grants, competitions & incubation programs",
+        link: "/startup/funding",
+      },
+      {
+        title: "Post Your Idea",
+        icon: BookOpen,
+        description: "Share your startup idea with the community",
+        link: "/startup/post-idea",
+      },
     ],
   },
 
   gym: {
     name: "Fitness & Gym",
-
     description:
       "Find gym buddies, share routines, and stay motivated on your fitness journey!",
-
     icon: Dumbbell,
-
     gradient: "bg-gradient-to-br from-red-500 to-rose-600",
-
     color: "text-gym",
-
     members: 278,
-
     resources: [
       {
         title: "Workout Plans",
         icon: Dumbbell,
         description: "Beginner to advanced routines",
       },
-
       {
         title: "Nutrition Guide",
         icon: Utensils,
         description: "Meal plans and diet tips",
       },
-
       {
         title: "Gym Buddies",
         icon: Users,
         description: "Find workout partners",
       },
-
       {
         title: "Progress Tracker",
         icon: Target,
@@ -256,6 +234,7 @@ const CommunityPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+
   const idToSlug: Record<string, string> = {
     "1": "travel",
     "2": "dsa",
@@ -266,8 +245,7 @@ const CommunityPage = () => {
 
   const slug = idToSlug[id || "1"];
   const community = communityData[slug];
-  const community2=communityData[slug];
-  const Icon = community2.icon;
+  const Icon = community.icon;
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPost, setNewPost] = useState("");
@@ -275,10 +253,12 @@ const CommunityPage = () => {
   const [activeCommentBox, setActiveCommentBox] = useState<number | null>(null);
   const [commentText, setCommentText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  // JOIN STATE
-const [isJoined, setIsJoined] = useState(false);
-const [membersCount, setMembersCount] = useState(0);
-  // State for Chat
+
+  // Join State
+  const [isJoined, setIsJoined] = useState(false);
+  const [membersCount, setMembersCount] = useState(0);
+
+  // Chat State
   const [chatMessages, setChatMessages] = useState<
     {
       is_read: unknown;
@@ -287,8 +267,8 @@ const [membersCount, setMembersCount] = useState(0);
       message_text: string;
     }[]
   >([]);
-  const [currentMsg, setCurrentMsg] = useState("");
   const currentUser = localStorage.getItem("username") || "Anonymous";
+
   interface Comment {
     username: string;
     content: string;
@@ -296,104 +276,66 @@ const [membersCount, setMembersCount] = useState(0);
   }
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
 
-  // CHECK IF USER JOINED THIS COMMUNITY
+  // --- Join / Members ---
 
-const fetchJoinStatus = async () => {
-  try {
-    const token = localStorage.getItem("token");
+  const fetchJoinStatus = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        "https://connecto-2.onrender.com/api/communities/my-communities",
+        { headers: { Authorization: token } },
+      );
+      const joinedIds = res.data?.communities || [];
+      setIsJoined(joinedIds.includes(Number(id)));
+    } catch (err) {
+      console.error("Join Status Error:", err);
+    }
+  };
 
-    const res = await axios.get(
-      "https://connecto-2.onrender.com/api/communities/my-communities",
-      {
-        headers: { Authorization: token },
+  const fetchMembersCount = async () => {
+    try {
+      const res = await axios.get(
+        `https://connecto-2.onrender.com/api/communities/${id}/members-count`,
+      );
+      setMembersCount(res.data.membersCount);
+    } catch (err) {
+      console.error("Members count error:", err);
+    }
+  };
+
+  const handleToggleJoin = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!id) return;
+
+      if (isJoined) {
+        await axios.delete(
+          `https://connecto-2.onrender.com/api/communities/${id}/leave`,
+          { headers: { Authorization: token } },
+        );
+        setIsJoined(false);
+        setMembersCount((prev) => prev - 1);
+        toast({ title: "Left Community" });
+      } else {
+        await axios.post(
+          `https://connecto-2.onrender.com/api/communities/${id}/join`,
+          {},
+          { headers: { Authorization: token } },
+        );
+        setIsJoined(true);
+        setMembersCount((prev) => prev + 1);
+        toast({ title: "Joined Community 🎉" });
       }
-    );
-
-    console.log("JOINED DATA:", res.data);
-
-    const joinedIds = res.data?.communities || [];
-    if (joinedIds.includes(Number(id))) {
-      setIsJoined(true);
-    } else {
-      setIsJoined(false);
-    }
-
-  } catch (err) {
-    console.error("Join Status Error:", err);
-  }
-};
-const fetchMembersCount = async () => {
-  try {
-    const res = await axios.get(
-      `https://connecto-2.onrender.com/api/communities/${id}/members-count`
-    );
-    console.log(res.data.membersCount)
-    setMembersCount(res.data.membersCount);
-
-  } catch (err) {
-    console.error("Members count error:", err);
-  }
-};
-const handleToggleJoin = async () => {
-  try {
-    const token = localStorage.getItem("token");
-
-    if (!id) return;
-
-    if (isJoined) {
-      // LEAVE
-
-      console.log("Leaving:", id);
-
-      await axios.delete(
-        `https://connecto-2.onrender.com/api/communities/${id}/leave`,
-        {
-          headers: { Authorization: token },
-        }
-      );
-
-      setIsJoined(false);
-      setMembersCount((prev) => prev - 1);
-
+    } catch (err: any) {
       toast({
-        title: "Left Community",
-      });
-
-    } else {
-      // JOIN
-
-      console.log("Joining:", id);
- console.log(typeof id)
-      await axios.post(
-        `https://connecto-2.onrender.com/api/communities/${id}/join`,
-        {},
-        {
-          headers: { Authorization: token },
-        }
-      );
-
-      setIsJoined(true);
-      setMembersCount((prev) => prev + 1);
-
-      toast({
-        title: "Joined Community 🎉",
+        variant: "destructive",
+        title: "Error",
+        description: err.response?.data?.message || "Something went wrong",
       });
     }
+  };
 
-  } catch (err: any) {
-
-    console.error("JOIN ERROR:", err);
-
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description:
-        err.response?.data?.message ||
-        "Something went wrong",
-    });
-  }
-};
-  // 1. Fetch Posts Logic
+  // --- Posts ---
 
   const fetchPosts = async () => {
     try {
@@ -404,11 +346,8 @@ const handleToggleJoin = async () => {
       }
       const response = await axios.get(
         `https://connecto-2.onrender.com/api/posts/${slug}`,
-        {
-          headers: { Authorization: token },
-        },
+        { headers: { Authorization: token } },
       );
-      console.log(response.data,"Posts");
       setPosts(response.data);
     } catch (error) {
       if (error.response?.status === 401) navigate("/login");
@@ -420,57 +359,6 @@ const handleToggleJoin = async () => {
     }
   };
 
-  useEffect(() => {
-    fetchPosts();
-    fetchJoinStatus();
-    fetchMembersCount();  
-  }, [id]);
-const isFirstLoad = useRef(true);
-
-useEffect(() => {
-  if (!scrollRef.current) return;
-
-  if (isFirstLoad.current) {
-    // Chat open → direct bottom (no animation)
-    scrollRef.current.scrollIntoView({
-      behavior: "auto",
-      block: "end",
-    });
-
-    isFirstLoad.current = false;
-  } else {
-    // New message → smooth scroll
-    scrollRef.current.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  }
-}, [chatMessages]);
-  // useEffect ke andar socket listeners add karein
-  // 1. Mark as Read Function
-  const markAsRead = () => {
-    if (slug && currentUser) {
-      socket.emit("mark_messages_read", {
-        communityId: slug,
-        userId: currentUser, // Aapka naam, taaki server aapke alawa baaki sabke msgs read kar de
-      });
-    }
-  };
-
-  // 2. Listener for Blue Ticks
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("messages_marked_read", (data) => {
-      // Agar server se signal aaya ki read ho gaye hain, toh state update karo
-      setChatMessages((prev) => prev.map((msg) => ({ ...msg, is_read: 1 })));
-    });
-
-    return () => {
-      socket.off("messages_marked_read");
-    };
-  }, [slug]);
-  // 2. Create Post Logic
   const handleCreatePost = async () => {
     if (!newPost.trim()) return;
     setIsLoading(true);
@@ -494,9 +382,7 @@ useEffect(() => {
       setIsLoading(false);
     }
   };
-  // CommunityPage.tsx ke andar
 
-  // 1. Like Function
   const handleLike = async (postId: number) => {
     try {
       const token = localStorage.getItem("token");
@@ -505,7 +391,6 @@ useEffect(() => {
         {},
         { headers: { Authorization: token } },
       );
-      // UI update karne ke liye posts dubara fetch karein
       fetchPosts();
     } catch (error) {
       toast({
@@ -516,24 +401,15 @@ useEffect(() => {
     }
   };
 
-  // // 2. Reply Function (Abhi ke liye sirf alert ya placeholder)
-  // const handleReply = (postId: number) => {
-  //   toast({
-  //     title: "Coming Soon",
-  //     description: "Reply system is under development!",
-  //   });
-  // };
   const handleFetchComments = async (postId: number) => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
         `https://connecto-2.onrender.com/api/posts/${postId}/comments`,
-        {
-          headers: { Authorization: token },
-        },
+        { headers: { Authorization: token } },
       );
       setComments((prev) => ({ ...prev, [postId]: res.data }));
-      setActiveCommentBox(postId); // Box khol do
+      setActiveCommentBox(postId);
     } catch (err) {
       console.error("Failed to fetch comments");
     }
@@ -549,12 +425,13 @@ useEffect(() => {
         { headers: { Authorization: token } },
       );
       setCommentText("");
-      handleFetchComments(postId); // Refresh comments
+      handleFetchComments(postId);
       toast({ title: "Comment added!" });
     } catch (err) {
       toast({ variant: "destructive", title: "Failed to comment" });
     }
   };
+
   const toggleComments = (postId: number) => {
     if (activeCommentBox === postId) {
       setActiveCommentBox(null);
@@ -563,56 +440,78 @@ useEffect(() => {
     }
   };
 
+  // --- Chat ---
+
+  const markAsRead = () => {
+    if (slug && currentUser) {
+      socket.emit("mark_messages_read", {
+        communityId: slug,
+        userId: currentUser,
+      });
+    }
+  };
+
+  const isFirstLoad = useRef(true);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    if (isFirstLoad.current) {
+      scrollRef.current.scrollIntoView({ behavior: "auto", block: "end" });
+      isFirstLoad.current = false;
+    } else {
+      scrollRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [chatMessages]);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("messages_marked_read", () => {
+      setChatMessages((prev) => prev.map((msg) => ({ ...msg, is_read: 1 })));
+    });
+    return () => {
+      socket.off("messages_marked_read");
+    };
+  }, [slug]);
+
   useEffect(() => {
     if (!slug) return;
-
-    // 1. Join Room
     socket.emit("join_community", slug);
-    console.log("Joined room:", slug);
-
-    // 2. Clear old listener (Taki double messages na aayein)
     socket.off("receive_message");
-
-    // 3. New Listener
     socket.on("receive_message", (data) => {
-      console.log("📩 New message received:", data);
-      // Hamesha functional update use karein: (prev) => [...]
-      setChatMessages((prev) => {
-        // Duplicate check: Agar message already list mein hai (by some logic), toh skip karein
-        return [...prev, data];
-      });
+      setChatMessages((prev) => [...prev, data]);
     });
-
     return () => {
       socket.off("receive_message");
     };
-  }, [slug]); // Jab community id badlegi, naya room join hoga
- useEffect(() => {
-   const loadMessages = async () => {
-     try {
-       // 1. Token nikalo localStorage se
-       const token = localStorage.getItem("token");
+  }, [slug]);
 
-       if (!token) {
-         console.error("No token found, skipping history load");
-         return;
-       }
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get(
+          `https://connecto-2.onrender.com/api/messages/${slug}`,
+          { headers: { Authorization: token } },
+        );
+        setChatMessages(res.data);
+      } catch (err) {
+        console.error("Failed to load history", err);
+      }
+    };
+    if (slug) loadMessages();
+  }, [slug]);
 
-       const res = await axios.get(
-         `https://connecto-2.onrender.com/api/messages/${slug}`,
-         {
-           // 2. Header add karo (Ye miss ho gaya tha)
-           headers: { Authorization: token },
-         },
-       );
-       setChatMessages(res.data);
-     } catch (err) {
-       console.error("Failed to load history", err);
-     }
-   };
+  // --- Initial Data Load ---
 
-   if (slug) loadMessages();
- }, [slug]);
+  useEffect(() => {
+    fetchPosts();
+    fetchJoinStatus();
+    fetchMembersCount();
+  }, [id]);
+
+  // --- Chat Input Component ---
+
   const ChatInput = ({ onSend }: { onSend: (msg: string) => void }) => {
     const [text, setText] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
@@ -625,12 +524,10 @@ useEffect(() => {
       }
     };
 
-    // Emoji select hone par text me add
     const onEmojiClick = (emojiData: any) => {
       setText((prev) => prev + emojiData.emoji);
     };
 
-    // Click outside → emoji close
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -640,17 +537,13 @@ useEffect(() => {
           setShowEmoji(false);
         }
       };
-
       document.addEventListener("mousedown", handleClickOutside);
-
-      return () => {
+      return () =>
         document.removeEventListener("mousedown", handleClickOutside);
-      };
     }, []);
 
     return (
       <div className="p-4 bg-background/50 border-t border-white/10 flex gap-2 relative">
-        {/* Emoji Button */}
         <Button
           type="button"
           variant="ghost"
@@ -659,14 +552,12 @@ useEffect(() => {
           <Smile className="w-5 h-5" />
         </Button>
 
-        {/* Emoji Picker */}
         {showEmoji && (
           <div ref={emojiRef} className="absolute bottom-16 left-2 z-50">
             <EmojiPicker onEmojiClick={onEmojiClick} />
           </div>
         )}
 
-        {/* Input */}
         <Input
           placeholder="Type your message..."
           value={text}
@@ -675,40 +566,21 @@ useEffect(() => {
           className="bg-black/20"
         />
 
-        {/* Send Button */}
         <Button onClick={handleSend} className="btn-glow">
           <Send className="w-4 h-4" />
         </Button>
       </div>
     );
   };
-  // Send function same rahega, bas ek console add kiya hai debug ke liye
-  const sendChatMessage = () => {
-    if (currentMsg.trim() && slug) {
-      const msgData = {
-        communityId: slug,
-        sender_name: currentUser,
-        message_text: currentMsg,
-      };
 
-      console.log("📤 Sending message:", msgData);
-      const formatMySQLDate = () => {
-        return new Date().toISOString().slice(0, 19).replace("T", " ");
-      };
+  // --- Render ---
 
-      // Phir emit karte waqt:
-      socket.emit("send_message", 
-        msgData
-      );
-      setCurrentMsg("");
-    }
-  };
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-24 pb-12">
         <div className="container mx-auto px-4">
-          {/* --- Header Section (Enhanced UI) --- */}
+          {/* --- Header Section --- */}
           <motion.div
             className="glass-card p-8 mb-8 relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
@@ -750,9 +622,7 @@ useEffect(() => {
             defaultValue="posts"
             className="space-y-6"
             onValueChange={(value) => {
-              if (value === "chat") {
-                markAsRead(); // Jaise hi chat tab khule, ticks blue kar do
-              }
+              if (value === "chat") markAsRead();
             }}
           >
             <TabsList className="glass-card p-1">
@@ -826,10 +696,10 @@ useEffect(() => {
                         </div>
                       </div>
                       <p className="text-foreground/90">{post.content}</p>
-                      {/* Post Loop ke andar */}
+
                       <div className="flex gap-4 mt-4 pt-4 border-t border-border/40">
                         <button
-                          onClick={() => handleLike(post.id)} // Like function connect kiya
+                          onClick={() => handleLike(post.id)}
                           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-red-500 transition-colors"
                         >
                           <Heart
@@ -838,18 +708,14 @@ useEffect(() => {
                           {post.likes}
                         </button>
 
-                        {/* ... baaki post content ... */}
-
                         <button
-                          onClick={() => toggleComments(post.id)} // Ise use karein toggle ke liye
+                          onClick={() => toggleComments(post.id)}
                           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
                         >
                           <MessageCircle className="w-4 h-4" />
-                          {/* Yahan || 0 lagayein taaki empty na dikhe */}
                           {comments[post.id]?.length || 0} Comments
                         </button>
 
-                        {/* Comment Section (Accordion Style) */}
                         <AnimatePresence>
                           {activeCommentBox === post.id && (
                             <motion.div
@@ -858,7 +724,6 @@ useEffect(() => {
                               exit={{ height: 0, opacity: 0 }}
                               className="mt-4 pt-4 border-t border-border/20 overflow-hidden"
                             >
-                              {/* Existing Comments List */}
                               <div className="space-y-3 mb-4 max-h-40 overflow-y-auto pr-2">
                                 {comments[post.id]?.map((c, i) => (
                                   <div
@@ -874,8 +739,6 @@ useEffect(() => {
                                   </div>
                                 ))}
                               </div>
-
-                              {/* Input Field */}
                               <div className="flex gap-2">
                                 <Input
                                   placeholder="Write a comment..."
@@ -902,54 +765,54 @@ useEffect(() => {
               </div>
             </TabsContent>
 
-            {/* --- Resources Tab (Original UI) --- */}
             {/* --- Resources Tab --- */}
+            {/* ✅ Travel community gets live TravelResources, others get static cards */}
             <TabsContent value="resources">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {community.resources.map((resource, index: number) => {
-                  const ResIcon = resource.icon;
+              {slug === "travel" ? (
+                <TravelResources />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {community.resources.map((resource, index: number) => {
+                    const ResIcon = resource.icon;
 
-                  // Card ka design ek variable mein rakh lete hain taaki repeat na ho
-                  const CardContent = (
-                    <motion.div
-                      className="glass-card p-6 h-full hover:border-primary/50 cursor-pointer border border-white/10"
-                      whileHover={{ scale: 1.02 }}
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-lg ${community.gradient} flex items-center justify-center mb-4`}
+                    const CardContent = (
+                      <motion.div
+                        className="glass-card p-6 h-full hover:border-primary/50 cursor-pointer border border-white/10"
+                        whileHover={{ scale: 1.02 }}
                       >
-                        <ResIcon className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="font-display font-semibold mb-2">
-                        {resource.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {resource.description}
-                      </p>
-                    </motion.div>
-                  );
+                        <div
+                          className={`w-12 h-12 rounded-lg ${community.gradient} flex items-center justify-center mb-4`}
+                        >
+                          <ResIcon className="w-6 h-6 text-white" />
+                        </div>
+                        <h3 className="font-display font-semibold mb-2">
+                          {resource.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {resource.description}
+                        </p>
+                      </motion.div>
+                    );
 
-                  // Agar link hai toh Link component se wrap karo, nahi toh normal div
-                  return resource.link ? (
-                    <button
-                      key={index}
-                      onClick={() => navigate(resource.link!)}
-                      className="text-left w-full h-full"
-                    >
-                      {CardContent}
-                    </button>
-                  ) : (
-                    <div key={index}>{CardContent}</div>
-                  );
-                })}
-              </div>
+                    return resource.link ? (
+                      <button
+                        key={index}
+                        onClick={() => navigate(resource.link!)}
+                        className="text-left w-full h-full"
+                      >
+                        {CardContent}
+                      </button>
+                    ) : (
+                      <div key={index}>{CardContent}</div>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
 
-            {/* --- Chat Tab Placeholder --- */}
-            {/* --- Chat Tab - Real Time --- */}
+            {/* --- Chat Tab --- */}
             <TabsContent value="chat">
               <div className="glass-card flex flex-col h-[550px] overflow-hidden border-primary/20">
-                {/* Messages Area */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-black/10">
                   {chatMessages.length === 0 ? (
                     <div className="text-center text-muted-foreground mt-20 opacity-50">
@@ -959,8 +822,6 @@ useEffect(() => {
                   ) : (
                     chatMessages.map((msg, index) => {
                       const isMe = msg.sender_name === currentUser;
-
-                      // Time formatting logic
                       const timeStr = msg.created_at
                         ? new Date(msg.created_at).toLocaleTimeString([], {
                             hour: "2-digit",
@@ -975,12 +836,9 @@ useEffect(() => {
                           animate={{ opacity: 1, x: 0 }}
                           className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
                         >
-                          {/* Name Label */}
                           <span className="text-[10px] text-muted-foreground mb-1 px-1">
                             {isMe ? "You" : msg.sender_name}
                           </span>
-
-                          {/* Message Bubble - Added 'relative' and 'min-w' */}
                           <div
                             className={`px-4 py-2 rounded-2xl max-w-[80%] text-sm relative min-w-[90px] ${
                               isMe
@@ -988,12 +846,9 @@ useEffect(() => {
                                 : "bg-muted text-foreground rounded-tl-none"
                             }`}
                           >
-                            {/* Text with right padding so it doesn't overlap with time */}
                             <p className="pr-14 break-words">
                               {msg.message_text}
                             </p>
-
-                            {/* Timestamp & Read Receipt (Ticks) */}
                             <div
                               className={`absolute bottom-1 right-2 flex items-center gap-1 opacity-70 text-[9px] ${
                                 isMe
@@ -1002,11 +857,8 @@ useEffect(() => {
                               }`}
                             >
                               <span>{timeStr}</span>
-
-                              {/* Read Receipt Ticks (Only for my messages) */}
                               {isMe && (
                                 <span className="text-[11px] leading-none">
-                                  {/* logic: msg.is_read check karega (0 or 1) */}
                                   {msg.is_read ? (
                                     <span className="text-blue-400 font-bold">
                                       ✓✓
@@ -1022,14 +874,11 @@ useEffect(() => {
                       );
                     })
                   )}
-                  {/* Auto scroll anchor */}
                   <div ref={scrollRef} />
                 </div>
 
-                {/* Input Area */}
                 <ChatInput
                   onSend={(msg) => {
-                    // MySQL compatible date format
                     const mysqlDate = new Date()
                       .toISOString()
                       .slice(0, 19)
@@ -1039,7 +888,7 @@ useEffect(() => {
                       communityId: slug,
                       sender_name: currentUser,
                       message_text: msg,
-                      created_at: mysqlDate, // <--- Ab ye '2026-02-28 13:20:26' bhejega
+                      created_at: mysqlDate,
                       is_read: 0,
                     };
 
@@ -1048,6 +897,8 @@ useEffect(() => {
                 />
               </div>
             </TabsContent>
+
+            {/* --- Hackathon Tab (DSA only) --- */}
             {slug === "dsa" && (
               <TabsContent value="hackathon">
                 <HackathonTab />

@@ -15,6 +15,7 @@ const communityRoutes = require("./routes/communityRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
 const teamRoutes         = require("./routes/teamRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const placesRoutes = require("./routes/placesRoutes");
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use("/api/communities", communityRoutes);
 app.use("/api/hackathons", hackathonRoutes);
 app.use("/api/team",          teamRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/places",placesRoutes);
 
 // Ab saare routes /api/startup se shuru honge, jaise: /api/startup/post-idea
 app.get("/", (req, res) => {
