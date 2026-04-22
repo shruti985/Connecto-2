@@ -12,7 +12,7 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { socket } from "@/socket";
 import HackathonTab from "../components/hackathon/Hackathontab";
-import TravelResources from "@/pages/TravelResources"; // ✅ From File 1
+import { TravelResources } from "./TravelResources"; // ✅ From File 1
 import EmojiPicker from "emoji-picker-react";
 import { Smile } from "lucide-react";
 import {
@@ -175,18 +175,6 @@ const communityData: Record<string, Community> = {
         icon: Lightbulb,
         description: "Post ideas, find collaborators & get feedback",
         link: "/startup/ideas",
-      },
-      {
-        title: "Mentor Connect",
-        icon: Users,
-        description: "Book sessions with alumni mentors",
-        link: "/startup/mentors",
-      },
-      {
-        title: "Funding & Opportunities",
-        icon: Target,
-        description: "Grants, competitions & incubation programs",
-        link: "/startup/funding",
       },
       {
         title: "Post Your Idea",
