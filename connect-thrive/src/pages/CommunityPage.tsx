@@ -12,7 +12,7 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { socket } from "@/socket";
 import HackathonTab from "../components/hackathon/Hackathontab";
-import { TravelResources } from "./TravelResources"; // ✅ From File 1
+import  TravelResources  from "./TravelResources"; // ✅ From File 1
 import EmojiPicker from "emoji-picker-react";
 import { Smile } from "lucide-react";
 import {
