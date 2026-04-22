@@ -12,7 +12,10 @@ import axios from "axios";
 import { Input } from "@/components/ui/input";
 import { socket } from "@/socket";
 import HackathonTab from "../components/hackathon/Hackathontab";
-import  TravelResources  from "./TravelResources"; // ✅ From File 1
+import  TravelResources  from "./TravelResources"; 
+import MentalWellnessResources from "./Mentalwellnessresources";
+import FitnessResources from "./FitnessResources";
+import CodingResources from "./Codingresources";
 import EmojiPicker from "emoji-picker-react";
 import { Smile } from "lucide-react";
 import {
@@ -98,7 +101,7 @@ const communityData: Record<string, Community> = {
   },
 
   dsa: {
-    name: "DSA & Coding",
+    name: "Coding & Hackathons",
     description:
       "Master Data Structures & Algorithms together. Share resources and crack placements!",
     icon: Code,
@@ -106,26 +109,7 @@ const communityData: Record<string, Community> = {
     color: "text-dsa",
     members: 456,
     resources: [
-      {
-        title: "LeetCode Roadmap",
-        icon: Target,
-        description: "Curated problem sets by topic",
-      },
-      {
-        title: "Interview Prep",
-        icon: BookOpen,
-        description: "Company-wise question banks",
-      },
-      {
-        title: "Study Resources",
-        icon: BookOpen,
-        description: "Best tutorials and courses",
-      },
-      {
-        title: "Contest Calendar",
-        icon: Target,
-        description: "Upcoming coding competitions",
-      },
+      
     ],
   },
 
@@ -754,11 +738,17 @@ const CommunityPage = () => {
             </TabsContent>
 
             {/* --- Resources Tab --- */}
-            {/* ✅ Travel community gets live TravelResources, others get static cards */}
             <TabsContent value="resources">
-              {slug === "travel" ? (
-                <TravelResources />
-              ) : (
+  {slug === "travel" ? (
+    <TravelResources />
+  ) : slug === "mental-wellness" ? (
+    <MentalWellnessResources />
+  ) : slug === "gym" ? (
+    <FitnessResources />
+  ) : slug === "dsa" ? (
+    <CodingResources />
+  ) : (
+    
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {community.resources.map((resource, index: number) => {
                     const ResIcon = resource.icon;
@@ -795,8 +785,8 @@ const CommunityPage = () => {
                     );
                   })}
                 </div>
-              )}
-            </TabsContent>
+  )}
+</TabsContent>
 
             {/* --- Chat Tab --- */}
             <TabsContent value="chat">
